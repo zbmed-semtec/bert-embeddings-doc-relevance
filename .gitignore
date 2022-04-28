@@ -1,3 +1,7 @@
+
+# files not to be pushed to git
+CORPORA/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
