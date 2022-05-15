@@ -42,8 +42,8 @@ class DataPreprocess:
             data = data.drop(['title','abstract'],axis=1)
             return data
             
-        
-    def parse_xmls(self,xml_dir:str):
+    @staticmethod
+    def parse_xmls(xml_dir:str):
         """ Fuction to parse the xml file into a dictionary
         
         Args:
@@ -54,7 +54,6 @@ class DataPreprocess:
                                                 with PMID as key and title and abstract as values
         
         """
-        
         def generate_dict(file_path:str):
             dic = {}
             for file in os.listdir(file_path):
@@ -72,8 +71,8 @@ class DataPreprocess:
             return dict
                     
     
-    
-    def remove_stopwords(self,data:pd.DataFrame):
+    @staticmethod
+    def remove_stopwords(data:pd.DataFrame):
         """ Removes the stopwords from the data
 
         Args:
@@ -86,7 +85,8 @@ class DataPreprocess:
         data['text'] = data['text'].apply(lambda x: ' '.join([word for word in x.split() if word not in stop_words]))
         return data
     
-    def remove_white_space(self,data:pd.DataFrame):
+    @staticmethod
+    def remove_white_space(data:pd.DataFrame):
         """ Removes the white spaces from the text
 
         Args:
@@ -96,8 +96,9 @@ class DataPreprocess:
         """
         data['text'] = data['text'].apply(lambda x: re.sub('\s+', ' ', x))
         return data
-        
-    def remove_punctuation(self,data:pd.DataFrame):
+    
+    @staticmethod
+    def remove_punctuation(data:pd.DataFrame):
         """ Removes the punctuation from the data
 
         Args:
@@ -108,7 +109,8 @@ class DataPreprocess:
         data['text'] = data['text'].apply(lambda x: re.sub('[^a-zA-Z]', ' ', x))
         return data
     
-    def stemming(self,data:pd.DataFrame):
+    @staticmethod
+    def stemming(data:pd.DataFrame):
         """ Stemming the data
 
         Args:
@@ -159,6 +161,12 @@ if __name__ == '__main__':
     xml_data = CustomDataset('../data/Input/TREC/XML')
     
     for idx,(pmid, text) in enumerate(xml_data):
+        print(pmid, text)
+        print("*"*50)
+        if idx == 5:
+            break
+        
+    for idx,(pmid, text) in enumerate(tsv_data):
         print(pmid, text)
         print("*"*50)
         if idx == 5:
