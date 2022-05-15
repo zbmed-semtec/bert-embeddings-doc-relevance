@@ -1,4 +1,3 @@
-from zmq import device
 from sentence_transformers import SentenceTransformer
 from datamodule import CustomDataset
 import pickle as pkl
