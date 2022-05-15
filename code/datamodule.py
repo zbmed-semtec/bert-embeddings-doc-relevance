@@ -1,28 +1,77 @@
+from matplotlib.pyplot import title
 import pandas as pd
 import nltk
 import re
 from torch.utils.data.dataset import Dataset
+import xmltodict
+import os
 
 
 class DataPreprocess:
     """
         Class to preprocess the documents in the corpus
     """
-    def __init__(self,tsv_file_path:str):
-        self.path = tsv_file_path
+    def __init__(self,file_path:str):
+        """ Initializes the class
+
+        Args:
+            file_path (str): File path if tsv or, directory path if dir of xml files
+        """
+        self.path = file_path
         
     def read_data(self):
-        """ Reads the data from the tsv file 
+        """ Reads the data from the file path 
 
         Returns:
             df: pandas dataframe
         """
-        data = pd.read_csv(self.path, sep='\t')
-        data = data.dropna()
-        # combine the title and abstract
-        data['text'] = data['title'] + ' ' + data['abstract']
-        data = data.drop(['title','abstract'],axis=1)
-        return data
+        if self.path.endswith('.tsv'):
+            data = pd.read_csv(self.path, sep='\t')
+            data = data.dropna()
+            # combine the title and abstract
+            data['text'] = data['title'] + ' ' + data['abstract']
+            data = data.drop(['title','abstract'],axis=1)
+            return data
+        # if path is a directory
+        elif os.path.isdir(self.path):
+            dict = self.parse_xmls(self.path)
+            data = pd.DataFrame.from_dict(dict,orient='index')
+            data['PMID'] = data.index
+            data = data.reset_index(drop=True)
+            data['text'] = data['title'] + ' ' + data['abstract']
+            data = data.drop(['title','abstract'],axis=1)
+            return data
+            
+        
+    def parse_xmls(self,xml_dir:str):
+        """ Fuction to parse the xml file into a dictionary
+        
+        Args:
+            xml_dir (str) : path to the xml files directory
+        
+        Returns:
+            {"pmid1":{"title":title,"abstract":abstract},"pmid2"...} : dictionary of the xml files, 
+                                                with PMID as key and title and abstract as values
+        
+        """
+        
+        def generate_dict(file_path:str):
+            dic = {}
+            for file in os.listdir(file_path):
+                if file.endswith('.xml'):
+                    with open(os.path.join(xml_dir,file),'r') as f:
+                        xml_dict = xmltodict.parse(f.read())
+                        pmid = xml_dict["collection"]["document"]["id"]
+                        title = xml_dict["collection"]["document"]["passage"][0]["text"]
+                        abstract = xml_dict["collection"]["document"]["passage"][-1]["text"]
+                        dic[pmid] = {'title':title,'abstract':abstract}
+            return dic
+        
+        if os.path.isdir(xml_dir):
+            dict = generate_dict(xml_dir)
+            return dict
+                    
+    
     
     def remove_stopwords(self,data:pd.DataFrame):
         """ Removes the stopwords from the data
@@ -32,6 +81,7 @@ class DataPreprocess:
         Returns:
             data: pandas dataframe
         """
+        nltk.download('stopwords')
         stop_words = nltk.corpus.stopwords.words('english')
         data['text'] = data['text'].apply(lambda x: ' '.join([word for word in x.split() if word not in stop_words]))
         return data
@@ -105,9 +155,10 @@ class CustomDataset(Dataset):
 
 
 if __name__ == '__main__':
-    data = CustomDataset('../data/Input/RELISH/TSV/sample.tsv')
+    tsv_data = CustomDataset('../data/Input/RELISH/TSV/sample.tsv')
+    xml_data = CustomDataset('../data/Input/TREC/XML')
     
-    for idx,(pmid, text) in enumerate(data):
+    for idx,(pmid, text) in enumerate(xml_data):
         print(pmid, text)
         print("*"*50)
         if idx == 5:

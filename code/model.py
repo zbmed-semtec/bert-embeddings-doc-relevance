@@ -25,7 +25,7 @@ def generate_embeddings(data:CustomDataset, model:SentenceTransformer,
     print('Generating embeddings...')
     for pmid, text in tqdm(data):
         embed = model.encode(text, convert_to_tensor=True, device=torch.device('cpu'))
-        df = df.append({'PMID': pmid, 'embedding': embed},ignore_index=True)
+        df = pd.concat([df, pd.DataFrame({'PMID':[pmid], 'embedding':[embed]})])
     pkl.dump(df, open(save_path, 'wb'))
     if return_df:
         return df
