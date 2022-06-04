@@ -1,6 +1,8 @@
 
 # files not to be pushed to git
 CORPORA/
+.vscode/
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

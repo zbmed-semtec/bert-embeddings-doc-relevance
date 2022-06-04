@@ -6,19 +6,21 @@ import xmltodict
 import os
 
 
+
 class DataPreprocess:
     """
         Class to preprocess the documents in the corpus
     """
-    def __init__(self,file_path:str):
+    def __init__(self, file_path: str):
         """ Initializes the class
 
         Args:
-            file_path (str): File path if tsv or, directory path if dir of xml files
+            file_path (str): File path if tsv or, directory path if dir of xml 
+            files
         """
         self.path = file_path
         
-    def read_data(self):
+    def read_data(self)->pd.DataFrame:
         """ Reads the data from the file path 
 
         Returns:
@@ -42,15 +44,16 @@ class DataPreprocess:
             return data
             
     @staticmethod
-    def parse_xmls(xml_dir:str):
+    def parse_xmls(xml_dir:str)->dict:
         """ Fuction to parse the xml file into a dictionary
         
         Args:
             xml_dir (str) : path to the xml files directory
         
         Returns:
-            {"pmid1":{"title":title,"abstract":abstract},"pmid2"...} : dictionary of the xml files, 
-                                                with PMID as key and title and abstract as values
+            {"pmid1":{"title":title,"abstract":abstract},"pmid2"...} : 
+            dictionary of the xml files,with PMID as key and title and abstract
+            as values
         
         """
         def generate_dict(file_path:str):
@@ -71,7 +74,7 @@ class DataPreprocess:
                     
     
     @staticmethod
-    def remove_stopwords(data:pd.DataFrame):
+    def remove_stopwords(data:pd.DataFrame)->pd.DataFrame:
         """ Removes the stopwords from the data
 
         Args:
@@ -85,7 +88,7 @@ class DataPreprocess:
         return data
     
     @staticmethod
-    def remove_white_space(data:pd.DataFrame):
+    def remove_white_space(data:pd.DataFrame)->pd.DataFrame:
         """ Removes the white spaces from the text
 
         Args:
@@ -97,7 +100,7 @@ class DataPreprocess:
         return data
     
     @staticmethod
-    def remove_punctuation(data:pd.DataFrame):
+    def remove_punctuation(data:pd.DataFrame)->pd.DataFrame:
         """ Removes the punctuation from the data
 
         Args:
@@ -109,7 +112,7 @@ class DataPreprocess:
         return data
     
     @staticmethod
-    def stemming(data:pd.DataFrame):
+    def stemming(data:pd.DataFrame)->pd.DataFrame:
         """ Stemming the data
 
         Args:
@@ -121,7 +124,7 @@ class DataPreprocess:
         data['text'] = data['text'].apply(lambda x: ' '.join([ps.stem(word) for word in x.split()]))
         return data
     
-    def text_normalize(self):
+    def text_normalize(self)->pd.DataFrame:
         """ Normalizes the data 
 
         Args:
@@ -143,7 +146,7 @@ class CustomDataset(Dataset):
         super().__init__()
         self.df = DataPreprocess(data_file_path).text_normalize()
 
-    def __len__(self):
+    def __len__(self)->int:
         """ Returns number of rows in the dataset
         """
         return len(self.df)

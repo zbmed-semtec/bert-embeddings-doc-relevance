@@ -4,12 +4,16 @@ from sentence_transformers.util import semantic_search
 import torch
 from sklearn.metrics.pairwise import cosine_similarity
 
-# read the pickle file and return the data
+
+# reads the pickle file and return the data
 def read_pickle(file_path:str):
     with open(file_path, 'rb') as f:
         data = pkl.load(f)
     return data
 
+def create_similarity_matrix():
+    pass
+    
 
 
 if __name__ == '__main__':
