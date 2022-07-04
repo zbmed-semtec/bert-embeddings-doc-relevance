@@ -10,16 +10,14 @@ import pickle as pkl
 from typing import List
 
 import torch
-import numpy as np
 from sentence_transformers import SentenceTransformer
-from sentence_transformers.util import semantic_search
+from sentence_transformers.util import semantic_search, cos_sim
 
 
-
-def read_pickle(file_path:str):
+def read_pickle(file_path: str):
     """ Reads the pickle file and return the data"""
-    with open(file_path, 'rb') as f:
-        data = pkl.load(f)
+    with open(file_path, 'rb') as file:
+        data = pkl.load(file)
     return data
 
 
@@ -42,7 +40,7 @@ def cosine_similarity_matrix(pkl_path: str, save_path: str, return_matrix: bool 
         embed1 = data.loc[data['PMID'] == pmid1, 'embedding'].values[0].reshape(1, -1)
         for j, pmid2 in enumerate(pmids):
             embed2 = data.loc[data['PMID'] == pmid2, 'embedding'].values[0].reshape(1, -1)
-            matrix[i, j] =  torch.cosine_similarity(embed1, embed2)
+            matrix[i, j] =  cos_sim(embed1, embed2)
 
     pkl.dump(matrix, open(save_path, 'wb'))
     if return_matrix:

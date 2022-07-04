@@ -20,6 +20,7 @@ from datamodule import CustomDataset
 MODEL_NAME = 'dmis-lab/biobert-large-cased-v1.1'
 RELISH_DATA_PATH = '../data/Input/RELISH/TSV/sample.tsv'
 TREC_DATA_PATH = '../data/Input/TREC/TSV/sample.tsv'
+BATCH_SIZE = 64
 
 
 
@@ -38,12 +39,11 @@ def generate_embeddings(data: CustomDataset, model: SentenceTransformer,
         pd.DataFrame: pandas dataframe or None if return_df is False
     """
     df = pd.DataFrame(columns=['PMID', 'embedding'])
-    device = torch.device('cuda:0,1' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print("*"*50)
     print('Generating embeddings...')
     for pmid, text in tqdm(data):
-        embed = model.encode(text, convert_to_tensor=True,
-                                device=device)
+        embed = model.encode(text, batch_size = BATCH_SIZE, device = device)
         df = pd.concat([df, pd.DataFrame({'PMID':[pmid], 'embedding':[embed]})])
     pkl.dump(df, open(save_path, 'wb'))
     if return_df:

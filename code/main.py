@@ -7,14 +7,8 @@ copyright: GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 
 maintainer: Vishnu Vardhan Dadi, Lukas Geist
 """
-import pickle as pkl
 
-import torch
-import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
-
-from utils import read_pickle, cosine_similarity_matrix
-from utils import query_similar_pmids
+from utils import cosine_similarity_matrix, query_similar_pmids
 
 MODEL_NAME = 'dmis-lab/biobert-large-cased-v1.1'
 PKL_FILE_PATH = '../data/Output/TREC/trec_embeddings.pkl'
@@ -23,8 +17,9 @@ SAVE_PKL_FILE_PATH = '../data/Output/TREC/trec_similarity_matrix.pkl'
 
 if __name__ == '__main__':
     # create cosine similarity matrix
-    cosine_matrix = cosine_similarity_matrix(pkl_file_path = PKL_FILE_PATH,
-                                            save_pkl_file_path = SAVE_PKL_FILE_PATH)
+    cosine_matrix = cosine_similarity_matrix(pkl_path = PKL_FILE_PATH,
+                                            save_path = SAVE_PKL_FILE_PATH,
+                                            return_matrix = True)
 
     # find the closest pmids for below queries
     queries = ['Investigating global trends in paraquat intoxication research \
