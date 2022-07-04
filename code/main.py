@@ -21,16 +21,16 @@ if __name__ == '__main__':
                                             save_path = SAVE_PKL_FILE_PATH,
                                             return_matrix = True)
 
-    # find the closest pmids for below queries
-    queries = ['Investigating global trends in paraquat intoxication research \
-               from 1962 to 2015 using bibliometric analysis.',
-               'Environmental implications for disaster preparedness: lessons \
-               learnt from the Indian Ocean Tsunami.',
-               'Trends in and contributions to entrepreneurship research: a   \
-                broad review of literature from 1996 to June 2012.']
+    # # find the closest pmids for below queries
+    # queries = ['Investigating global trends in paraquat intoxication research \
+    #            from 1962 to 2015 using bibliometric analysis.',
+    #            'Environmental implications for disaster preparedness: lessons \
+    #            learnt from the Indian Ocean Tsunami.',
+    #            'Trends in and contributions to entrepreneurship research: a   \
+    #             broad review of literature from 1996 to June 2012.']
 
-    pmids = query_similar_pmids(pkl_file_path = PKL_FILE_PATH, queries = queries,
-                                model_name = MODEL_NAME, top_k = 2)
+    # pmids = query_similar_pmids(pkl_file_path = PKL_FILE_PATH, queries = queries,
+    #                             model_name = MODEL_NAME, top_k = 2)
 
 
 

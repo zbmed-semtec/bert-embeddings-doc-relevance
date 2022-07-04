@@ -10,6 +10,7 @@ import pickle as pkl
 from typing import List
 
 import torch
+from tqdm import tqdm
 from sentence_transformers import SentenceTransformer
 from sentence_transformers.util import semantic_search, cos_sim
 
@@ -36,7 +37,7 @@ def cosine_similarity_matrix(pkl_path: str, save_path: str, return_matrix: bool 
     data = read_pickle(pkl_path)
     pmids = data['PMID']
     matrix  = torch.zeros((len(pmids), len(pmids)))
-    for i, pmid1 in enumerate(pmids):
+    for i, pmid1 in enumerate(tqdm(pmids)):
         embed1 = data.loc[data['PMID'] == pmid1, 'embedding'].values[0].reshape(1, -1)
         for j, pmid2 in enumerate(pmids):
             embed2 = data.loc[data['PMID'] == pmid2, 'embedding'].values[0].reshape(1, -1)
