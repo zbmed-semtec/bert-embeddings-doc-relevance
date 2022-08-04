@@ -6,10 +6,17 @@ copyright: GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 
 maintainer: Vishnu Vardhan Dadi, Lukas Geist
 """
+
+import os
+import warnings
 import pickle as pkl
 from typing import List
 
+warnings.filterwarnings("ignore")
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
 import torch
+import numpy as np
 from tqdm import tqdm
 from sentence_transformers import SentenceTransformer
 from sentence_transformers.util import semantic_search, cos_sim
@@ -47,6 +54,7 @@ def cosine_similarity_matrix(pkl_path: str, save_path: str, return_matrix: bool 
     if return_matrix:
         return matrix
 
+
 def query_similar_pmids(pkl_file_path: str, queries: List, model_name: str, top_k: int = 2):
     """ Finds the top k similar pmids for the given queries.
 
@@ -64,7 +72,7 @@ def query_similar_pmids(pkl_file_path: str, queries: List, model_name: str, top_
     embeds = data['embedding'].tolist()
     similari_pmids = []
     for query in queries:
-        q = embedder.encode(query,convert_to_tensor=True, device=torch.device('cpu'))
+        q = embedder.encode(query,convert_to_tensor=True, device =torch.device('cpu'))
         similars = semantic_search(q, embeds, top_k=top_k)[0]
         similari_pmids.append(similars)
         print("query:", query)
@@ -75,3 +83,24 @@ def query_similar_pmids(pkl_file_path: str, queries: List, model_name: str, top_
             print(f'pmid:{pmid}|| score:{score}')
         print("-"*50)
     return similari_pmids
+
+def get_device():
+    """ Returns GPU if available else returns CPU.
+        Prints GPU info if GPU is available."""
+
+    if torch.cuda.is_available():
+        device_count = torch.cuda.device_count()
+        device_current = torch.cuda.current_device()
+        device_name = torch.cuda.get_device_name(device_current)
+        device = torch.device('cuda')
+        print(f'Found {device_count} GPU(s). \
+              Using GPU {device_current}.    \
+              Device name: {device_name}')
+    else:
+        device = torch.device('cpu')
+        print('No GPU found. Using CPU.')
+    return device
+
+
+if __name__ == '__main__':
+    device = get_device()

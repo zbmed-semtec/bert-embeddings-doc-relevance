@@ -7,14 +7,20 @@ copyright: GENERAL PUBLIC LICENSE Version 3, 29 June 2007
 
 maintainer: Vishnu Vardhan Dadi, Lukas Geist
 """
+import os
+import warnings
 import pickle as pkl
 
+warnings.filterwarnings("ignore")
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
 import pandas as pd
-import torch
 from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
 
 from datamodule import CustomDataset
+from utils import get_device
+
 
 
 MODEL_NAME = 'dmis-lab/biobert-large-cased-v1.1'
@@ -39,15 +45,16 @@ def generate_embeddings(data: CustomDataset, model: SentenceTransformer,
         pd.DataFrame: pandas dataframe or None if return_df is False
     """
     df = pd.DataFrame(columns=['PMID', 'embedding'])
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print("*"*50)
     print('Generating embeddings...')
     for pmid, text in tqdm(data):
-        embed = model.encode(text, batch_size = BATCH_SIZE, device = device)
+        embed = model.encode(text, batch_size = BATCH_SIZE, device = get_device())
         df = pd.concat([df, pd.DataFrame({'PMID':[pmid], 'embedding':[embed]})])
     pkl.dump(df, open(save_path, 'wb'))
     if return_df:
         return df
+
+
 
 
 if __name__ == '__main__':
