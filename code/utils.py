@@ -12,14 +12,15 @@ import warnings
 import pickle as pkl
 from typing import List
 
-warnings.filterwarnings("ignore")
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-
 import torch
 import numpy as np
 from tqdm import tqdm
+from numba import njit
 from sentence_transformers import SentenceTransformer
 from sentence_transformers.util import semantic_search, cos_sim
+
+warnings.filterwarnings("ignore")
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 
 def read_pickle(file_path: str):
@@ -53,6 +54,33 @@ def cosine_similarity_matrix(pkl_path: str, save_path: str, return_matrix: bool 
     pkl.dump(matrix, open(save_path, 'wb'))
     if return_matrix:
         return matrix
+
+
+@njit(fastmath=True)
+def cosine_similarity_numba(u:np.ndarray, v:np.ndarray):
+    """ Computes the cosine similarity between two
+        vectors using numba.
+
+    Args:
+        u (np.ndarray): vector 1
+        v (np.ndarray): vector 2
+
+    Returns:
+        _type_: float - cosine similarity
+    """
+    assert(u.shape[0] == v.shape[0])
+
+    uv = 0
+    uu = 0
+    vv = 0
+    for i in range(u.shape[0]):
+        uv += u[i]*v[i]
+        uu += u[i]*u[i]
+        vv += v[i]*v[i]
+    cos_theta = 1
+    if uu!=0 and vv!=0:
+        cos_theta = uv/np.sqrt(uu*vv)
+    return cos_theta
 
 
 def query_similar_pmids(pkl_file_path: str, queries: List, model_name: str, top_k: int = 2):
