@@ -1,0 +1,10 @@
+
+models : ["dmis-lab/biobert-base-cased-v1.1",
+          "dmis-lab/biobert-large-cased-v1.1",
+          "dmis-lab/biobert-base-cased-v1.2",
+          "dmis-lab/biobert-large-cased-v1.2",]
+
+datasets: ["TREC", "RELISH"]
+
+seq_length: [128, 256, 512, 786, 1024, 2056, 4096]
+
