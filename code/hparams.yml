@@ -8,3 +8,5 @@ datasets: ["TREC", "RELISH"]
 
 seq_length: [128, 256, 512, 786, 1024, 2056, 4096]
 
+epochs: 5
+
