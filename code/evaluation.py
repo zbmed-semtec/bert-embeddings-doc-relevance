@@ -1,6 +1,7 @@
 
 
 import pandas as pd
+from tqdm import tqdm
 
 
 class PrecisionN:
@@ -50,7 +51,7 @@ class PrecisionN:
         self.pn_df['PMID'] = indices
         headers = self.mat_data.columns.tolist()
 
-        for index in indices:
+        for index in tqdm(indices, desc="Finding precision@"+str(n)):
             tp = 0
             visited_pairs = [] # to avoid duplicate pairs
             row = sorted(self.mat_data.loc[index].values.tolist(), reverse=True)
