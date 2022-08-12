@@ -88,4 +88,4 @@ class PrecisionN:
         if ".pkl" in save_path:
             self.pn_df.to_pickle(save_path)
         if ".tsv" in save_path:
-            self.pn_df.to_csv(save_path, index=False)
+            self.pn_df.to_csv(save_path, sep='\t', index=False)
