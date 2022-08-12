@@ -64,7 +64,7 @@ class PrecisionN:
                     visited_pairs.append((pmid1,pmid2))
                     visited_pairs.append((pmid2,pmid1))
                     if self.tsv_data.loc[(self.tsv_data['PMID2'] == pmid2) &
-                                            (self.tsv_data['PMID1'] == pmid1)]['Rel-d2d'].values[0] == self.relv:
+                                            (self.tsv_data['PMID1'] == pmid1)]['Rel-d2d'].values == self.relv:
                         tp += 1
 
             try:
@@ -84,6 +84,10 @@ class PrecisionN:
 
         for n in self.n_at:
             self.pn_df['p@'+str(n)] = [x[1] for x in self.find_topn(n)]
+
+        # adding avg precision to the dataframe
+        avg_list = self.pn_df.mean(axis=0).tolist()
+        self.pn_df.loc['avg'] = avg_list
 
         if ".pkl" in save_path:
             self.pn_df.to_pickle(save_path)
