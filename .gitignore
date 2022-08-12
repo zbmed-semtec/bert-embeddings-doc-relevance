@@ -2,6 +2,7 @@
 # files not to be pushed to git
 CORPORA/
 .vscode/
+trec_similarity_matrix_up.pkl
 
 
 # Byte-compiled / optimized / DLL files
