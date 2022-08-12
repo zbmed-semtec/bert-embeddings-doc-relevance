@@ -50,6 +50,7 @@ def generate_embeddings(data: CustomDataset, model: SentenceTransformer,
     for pmid, text in tqdm(data):
         embed = model.encode(text, batch_size = BATCH_SIZE, device = get_device())
         df = pd.concat([df, pd.DataFrame({'PMID':[pmid], 'embedding':[embed]})])
+        df.sort_values(by='PMID', inplace=True, ascending=True)
     pkl.dump(df, open(save_path, 'wb'))
     if return_df:
         return df
