@@ -6,12 +6,14 @@ import pandas as pd
 class PrecisionN:
     """ Class for precision@n evaluation mehtod.
     """
-    def __init__(self, mat_path: str, tsv_path: str):
+    def __init__(self, mat_path: str, tsv_path: str, relavance: str = None):
         """ Initializes the class with the matrix and tsv data paths
 
         Args:
             mat_path (str): path to the matrix file
             tsv_path (str): path to the tsv file
+            relavance (str): if 'simplified' argument is passed, relavance
+                             column is conisdered as (1==2).
         """
 
         if ".tsv" in mat_path:
@@ -25,7 +27,11 @@ class PrecisionN:
         #df for storing the precision@n values
         self.pn_df = pd.DataFrame(columns=['PMID'])
 
-        self.relavance = 2
+        if relavance == 'simplified':
+            self.relv = 1 or 2
+        else:
+            self.relv = 2
+
 
     def find_topn(self, n: int):
         """ Finds the top n precision values for each PMID
@@ -57,7 +63,7 @@ class PrecisionN:
                     visited_pairs.append((pmid1,pmid2))
                     visited_pairs.append((pmid2,pmid1))
                     if self.tsv_data.loc[(self.tsv_data['PMID2'] == pmid2) &
-                                            (self.tsv_data['PMID1'] == pmid1)]['Rel-d2d'].values[0] == self.relavance:
+                                            (self.tsv_data['PMID1'] == pmid1)]['Rel-d2d'].values[0] == self.relv:
                         tp += 1
 
             try:
