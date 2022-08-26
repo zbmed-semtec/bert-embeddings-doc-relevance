@@ -1,10 +1,11 @@
 
+import concurrent.futures
 
 import pandas as pd
 from tqdm import tqdm
 
 
-class PrecisionN:
+class PrecisionN:''
     """ Class for precision@n evaluation mehtod.
     """
     def __init__(self, mat_path: str, tsv_path: str, relavance: str = None):
@@ -19,22 +20,34 @@ class PrecisionN:
 
         if ".tsv" in mat_path:
             self.mat_data = pd.read_csv(mat_path, sep='\t')
+
         if ".pkl" in mat_path:
-            self.mat_data = pd.read_pickle(mat_path)
+            try:
+                self.mat_data = pd.read_pickle(mat_path)
+            except:
+                self.mat_data = pd.read_pickle(mat_path, compression='infer')
+
         self.tsv_data = pd.read_csv(tsv_path, sep='\t')
 
         self.n_at = [5,10,15,20,25,50]
 
         #df for storing the precision@n values
         self.pn_df = pd.DataFrame(columns=['PMID'])
+        for n in self.n_at:
+            self.pn_df['p@'+str(n)] = []
 
         if relavance == 'simplified':
             self.relv = 1 or 2
         else:
             self.relv = 2
 
+        # handling matrix data
+        self.indices = self.mat_data.index.tolist()
+        self.pn_df['PMID'] = self.indices
+        self.headers = self.mat_data.columns.tolist()
 
-    def find_topn(self, n: int):
+
+    def find_topn(self, index):
         """ Finds the top n precision values for each PMID
 
         Args:
@@ -43,36 +56,20 @@ class PrecisionN:
         Returns:
             list: [(pmid1,precision@n),(pmid2,precision@n),...,(pmidn,precision@n)]
         """
-
-        precision_list = []
-
-        # handling matrix data
-        indices = self.mat_data.index.tolist()
-        self.pn_df['PMID'] = indices
-        headers = self.mat_data.columns.tolist()
-
-        for index in tqdm(indices, desc="Finding precision@"+str(n)):
-            tp = 0
-            visited_pairs = [] # to avoid duplicate pairs
-            row = sorted(self.mat_data.loc[index].values.tolist(), reverse=True)
-            topn_values = row[1:n]
-            pmid1 = index
+        tp = 0
+        pmid1 = index
+        row = sorted(self.mat_data.loc[index].values.tolist(), reverse=True)
+        for n in self.n_at:
+            topn_values = row[1:n+1]
             for value in topn_values:
-                pmid2 = headers[row.index(value)]
-                # find relevance of pmid2 in pmid1 in tsv data
-                if (pmid1,pmid2) or  (pmid2,pmid1) not in visited_pairs:
-                    visited_pairs.append((pmid1,pmid2))
-                    visited_pairs.append((pmid2,pmid1))
-                    if self.tsv_data.loc[(self.tsv_data['PMID2'] == pmid2) &
-                                            (self.tsv_data['PMID1'] == pmid1)]['Rel-d2d'].values == self.relv:
-                        tp += 1
-
+                pmid2 = self.headers[row.index(value)]
+                if self.tsv_data.loc[(self.tsv_data['PMID2'] == pmid2) &
+                    (self.tsv_data['PMID1'] == pmid1)]['Rel-d2d'].values == self.relv:
+                    tp += 1
             try:
-                precision_list.append(tp/n)
+                self.pn_df['p@'+str(n)].loc[index] = tp/n
             except ZeroDivisionError:
-                precision_list.append(0.0)
-
-        return list(zip(indices, precision_list))
+                self.pn_df['p@'+str(n)].loc[index] = 0.0
 
     def create_precision_matrix(self, save_path: str):
         """ Creates the precision matrix for each n value and saves it to the
@@ -82,14 +79,15 @@ class PrecisionN:
             save_path (str): path to save the precision matrix
         """
 
-        for n in self.n_at:
-            self.pn_df['p@'+str(n)] = [x[1] for x in self.find_topn(n)]
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            tqdm(executor.map(self.find_topn, self.indices), total=len(self.indices))
 
         # adding avg precision to the dataframe
         avg_list = self.pn_df.mean(axis=0).tolist()
         self.pn_df.loc['avg'] = avg_list
 
         if ".pkl" in save_path:
-            self.pn_df.to_pickle(save_path)
+            self.pn_df.to_pickle(save_path, compression='infer')
         if ".tsv" in save_path:
             self.pn_df.to_csv(save_path, sep='\t', index=False)
+
