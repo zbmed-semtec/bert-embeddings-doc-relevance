@@ -60,19 +60,18 @@ class PrecisionN:
             tp = 0
             pmid1 = index
             row = sorted(self.mat_data.loc[index].values.tolist(), reverse=True)
-            for n in self.n_at:
-                topn_values = row[1:n+1]
-                for value in topn_values:
-                    pmid2 = self.headers[row.index(value)]
-                    if self.tsv_data.loc[(self.tsv_data['PMID2'] == pmid2) &
-                        (self.tsv_data['PMID1'] == pmid1)]['Rel-d2d'].values == self.relv:
+            topn_values = row[1:n+1]
+            for value in topn_values:
+                pmid2 = self.headers[row.index(value)]
+                if self.tsv_data.loc[(self.tsv_data['PMID2'] == pmid2) &
+                    (self.tsv_data['PMID1'] == pmid1)]['Rel-d2d'].values == self.relv:
 
-                        tp += 1
+                    tp += 1
 
-                try:
-                    self.pn_df['p@'+str(n)].loc[index] = tp/n
-                except ZeroDivisionError:
-                    self.pn_df['p@'+str(n)].loc[index] = 0.0
+            try:
+                self.pn_df['p@'+str(n)].loc[index] = tp/n
+            except ZeroDivisionError:
+                self.pn_df['p@'+str(n)].loc[index] = 0.0
 
     def create_precision_matrix(self, save_path: str):
         """ Creates the precision matrix for each n value and saves it to the
@@ -82,10 +81,7 @@ class PrecisionN:
             save_path (str): path to save the precision matrix
         """
         with concurrent.futures.ProcessPoolExecutor(max_workers=len(self.n_at)) as executor:
-            results = list(tqdm(executor.map(self.find_topn, self.n_at), total=len(self.n_at)))
-
-        for result in results:
-            self.pn_df['p@'+result.keys()[0]] = result.values()[0]
+            executor.map(self.find_topn, self.n_at)
 
         # adding avg precision to the dataframe
         avg_list = self.pn_df.mean(axis=0).tolist()
