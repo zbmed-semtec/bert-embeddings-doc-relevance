@@ -5,7 +5,7 @@ import pandas as pd
 from tqdm import tqdm
 
 
-class PrecisionN:''
+class PrecisionN:
     """ Class for precision@n evaluation mehtod.
     """
     def __init__(self, mat_path: str, tsv_path: str, relavance: str = None):
@@ -47,7 +47,7 @@ class PrecisionN:''
         self.headers = self.mat_data.columns.tolist()
 
 
-    def find_topn(self, index):
+    def find_topn(self, n: int):
         """ Finds the top n precision values for each PMID
 
         Args:
@@ -56,20 +56,23 @@ class PrecisionN:''
         Returns:
             list: [(pmid1,precision@n),(pmid2,precision@n),...,(pmidn,precision@n)]
         """
-        tp = 0
-        pmid1 = index
-        row = sorted(self.mat_data.loc[index].values.tolist(), reverse=True)
-        for n in self.n_at:
-            topn_values = row[1:n+1]
-            for value in topn_values:
-                pmid2 = self.headers[row.index(value)]
-                if self.tsv_data.loc[(self.tsv_data['PMID2'] == pmid2) &
-                    (self.tsv_data['PMID1'] == pmid1)]['Rel-d2d'].values == self.relv:
-                    tp += 1
-            try:
-                self.pn_df['p@'+str(n)].loc[index] = tp/n
-            except ZeroDivisionError:
-                self.pn_df['p@'+str(n)].loc[index] = 0.0
+        for index in tqdm(self.indices, desc="Finding precision@"+str(n)):
+            tp = 0
+            pmid1 = index
+            row = sorted(self.mat_data.loc[index].values.tolist(), reverse=True)
+            for n in self.n_at:
+                topn_values = row[1:n+1]
+                for value in topn_values:
+                    pmid2 = self.headers[row.index(value)]
+                    if self.tsv_data.loc[(self.tsv_data['PMID2'] == pmid2) &
+                        (self.tsv_data['PMID1'] == pmid1)]['Rel-d2d'].values == self.relv:
+
+                        tp += 1
+
+                try:
+                    self.pn_df['p@'+str(n)].loc[index] = tp/n
+                except ZeroDivisionError:
+                    self.pn_df['p@'+str(n)].loc[index] = 0.0
 
     def create_precision_matrix(self, save_path: str):
         """ Creates the precision matrix for each n value and saves it to the
@@ -78,16 +81,17 @@ class PrecisionN:''
         Args:
             save_path (str): path to save the precision matrix
         """
+        with concurrent.futures.ProcessPoolExecutor(max_workers=len(self.n_at)) as executor:
+            results = list(tqdm(executor.map(self.find_topn, self.n_at), total=len(self.n_at)))
 
-        with concurrent.futures.ProcessPoolExecutor() as executor:
-            tqdm(executor.map(self.find_topn, self.indices), total=len(self.indices))
+        for result in results:
+            self.pn_df['p@'+result.keys()[0]] = result.values()[0]
 
         # adding avg precision to the dataframe
         avg_list = self.pn_df.mean(axis=0).tolist()
         self.pn_df.loc['avg'] = avg_list
 
         if ".pkl" in save_path:
-            self.pn_df.to_pickle(save_path, compression='infer')
+            self.pn_df.to_pickle(save_path)
         if ".tsv" in save_path:
             self.pn_df.to_csv(save_path, sep='\t', index=False)
-
