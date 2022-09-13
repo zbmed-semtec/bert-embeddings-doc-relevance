@@ -14,9 +14,34 @@ import argparse as ap
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
+from numba import njit
 
-from utils import cosine_similarity_numba
 
+@njit(fastmath=True)
+def cosine_similarity_numba(u:np.ndarray, v:np.ndarray):
+    """ Computes the cosine similarity between two
+        vectors using numba.
+
+    Args:
+        u (np.ndarray): vector 1
+        v (np.ndarray): vector 2
+
+    Returns:
+        _type_: float - cosine similarity
+    """
+    assert(u.shape[0] == v.shape[0])
+
+    uv = 0
+    uu = 0
+    vv = 0
+    for i in range(u.shape[0]):
+        uv += u[i]*v[i]
+        uu += u[i]*u[i]
+        vv += v[i]*v[i]
+    cos_theta = 1
+    if uu!=0 and vv!=0:
+        cos_theta = uv/np.sqrt(uu*vv)
+    return cos_theta
 
 class CosineSimilarity:
     """
