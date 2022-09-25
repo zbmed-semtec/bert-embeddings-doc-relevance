@@ -33,19 +33,23 @@ The above command will generate a pickle file with the upper triangular cosine s
 
 To use this code in your python script:
 
-    ```python
-    from up_triangular_mtx import create_cs_matrix
+```python
 
-    embed_file_path = '../data/embeddings.pkl'
-    save_path = '../data/up_cosine_similarity.pkl'
+from up_triangular_mtx import create_cs_matrix
 
-    cs_mat = create_cs_matrix(embeds_path = embed_file_path,
-                    save_path = save_path,
-                    compression = False,
-                    return_df = True)
+# embeddings file path and save file path
+embed_file_path = '../data/embeddings.pkl'
+save_path = '../data/up_cosine_similarity.pkl'
 
-    print(cs_mat.head())
-    ```
+# create cosine similarity matrix
+cs_mat = create_cs_matrix(embeds_path = embed_file_path,
+                save_path = save_path,
+                compression = False,
+                return_df = True)
+
+# print the cosine similarity matrix
+print(cs_mat.head())
+```
 
 ## Four column relevance matrix
 
@@ -99,30 +103,34 @@ the output file will be saved as a pickle file. If the save path has a `.tsv` ex
 **Note**: If the extension is `.pkl`, output is a compressed pickle file. This means while loading the file, you have to use `compression='gzip'` option.
 For example:
 
-    ```python
-    import pandas as pd
+```python
+import pandas as pd
 
-    four_col_rel_df = pd.read_pickle('../data/four_col_rel.pkl', compression='gzip')
-    print(four_col_rel_df.head())
-    ```
+four_col_rel_df = pd.read_pickle('../data/four_col_rel.pkl', compression='gzip')
+print(four_col_rel_df.head())
+```
 
 To use this code in your python script:
 
-    ```python
-        from existing_pairs import CosineSimilarity
+```python
 
-        embed_file_path = '../data/embeddings.pkl'
-        rel_file_path = '../data/relevance_scores.pkl'
-        save_path = '../data/four_col_rel.pkl'
-        dataset = 'TREC'
+from existing_pairs import CosineSimilarity
 
-        four_col_rel_df = CosineSimilarity(embeds_path = embed_file_path,
-                        rel_path = rel_file_path,
-                        save_path = save_path,
-                        dataset = dataset)
+# Input and output file paths
+embed_file_path = '../data/embeddings.pkl'
+rel_file_path = '../data/relevance_scores.pkl'
+save_path = '../data/four_col_rel.pkl'
+dataset = 'TREC'
 
-        four_col_rel_df.create_relavance_matrix(save_path = save_path)
-    ```
+# create an object of CosineSimilarity class
+four_col_rel_df = CosineSimilarity(embeds_path = embed_file_path,
+                rel_path = rel_file_path,
+                save_path = save_path,
+                dataset = dataset)
+
+# generate the four column relevance matrix
+four_col_rel_df.create_relavance_matrix(save_path = save_path)
+```
 
 The output matrix will look like this:
 
