@@ -74,9 +74,7 @@ class CosineSimilarity:
         elif '.tsv' in rel_matrix_path:
             self.relavance_matrix = pd.read_csv(rel_matrix_path, sep='\t')
 
-        self.four_column_matrix = pd.DataFrame(columns=['PMID1', 'PMID2', 'Rel-d2d'])
-        self.four_column_matrix['PMID1'] = self.relavance_matrix['PMID1']
-        self.four_column_matrix['PMID2'] = self.relavance_matrix['PMID2']
+        self.four_column_matrix = pd.DataFrame()
 
         if dataset == 'TREC':
             self.four_column_matrix['Rel-d2d'] = self.relavance_matrix['Rel-d2d']
@@ -91,23 +89,32 @@ class CosineSimilarity:
             save_dir (str): path to the directory to save the 4 column matrix.
         """
         cs_list = []
+        pmid1_list = []
+        pmid2_list = []
+        rel_list = []
         embedding_column = self.embeds['embedding'].to_numpy()
         pmid_column = self.embeds['PMID'].to_numpy()
-        for pmid1, pmid2, _ in tqdm(self.relavance_matrix.to_numpy(),
+        for pmid1, pmid2, rel in tqdm(self.relavance_matrix.to_numpy(),
                                         total=self.relavance_matrix.shape[0]):
             embed1 = embedding_column[np.where(pmid_column == pmid1)[0]]
             embed2 = embedding_column[np.where(pmid_column == pmid2)[0]]
             if not embed1.size == 0 and not embed2.size == 0:
-                cs_list.append(cosine_similarity_numba(embed1[0], embed2[0]))
+                cs_list.append(round(cosine_similarity_numba(embed1[0], embed2[0]),4))
+                pmid1_list.append(pmid1)
+                pmid2_list.append(pmid2)
+                rel_list.append(rel)
             else:
-                cs_list.append('')
+                continue
 
+        self.four_column_matrix['PMID1'] =  pmid1_list
+        self.four_column_matrix['PMID2'] =  pmid2_list
+        self.four_column_matrix['Rel-d2d'] =  rel_list
         self.four_column_matrix['Cosine Similarity'] = cs_list
 
         if '.pkl' in save_dir:
             self.four_column_matrix.to_pickle(save_dir, compression='infer')
         elif '.tsv' in save_dir:
-            self.four_column_matrix.to_csv(save_dir, sep='\t')
+            self.four_column_matrix.to_csv(save_dir, sep='\t', index=False)
 
 if __name__ == '__main__':
 
