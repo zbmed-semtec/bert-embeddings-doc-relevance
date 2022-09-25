@@ -57,7 +57,8 @@ def create_cs_matrix(embeds_path: str, save_path: str, compression: bool = True,
                                     or not. Defaults to False.
 
     Returns:
-        _type_: _description_
+        pd.DataFrame: Cosine similarity matrix as a dataframe.
+                        If return_df is True.
     """
     data = pd.read_pickle(embeds_path)
 
@@ -94,10 +95,7 @@ if __name__ == '__main__':
                         help='Path to save the cosine similarity matrix.')
     parser.add_argument('--compression', type=bool, default=True,
                         help='Whether to compress the matrix or not. Defaults to True.')
-    parser.add_argument('--return_df', type=bool, default=False,
-                        help='Whether to return the matrix as a dataframe or not. \
-                            Defaults to False.')
     args = parser.parse_args()
 
     create_cs_matrix(args.embeds_path, args.save_path,
-                        args.compression, args.return_df)
+                        args.compression)
