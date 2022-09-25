@@ -140,3 +140,13 @@ The output matrix will look like this:
 | 1023      | 11457     | 2           | 0.9635    |
 | 9852      | 11457     | 0           | 0.3252    |
 | 9852      | 1023      | 1           | 0.7894    |
+
+
+
+### Requirements
+
+This code is stable with python 3.6 and higher. The required python packages are listed in the `requirements.txt` file. To install the required packages, run the following command:
+
+```bash
+pip install -r requirements.txt
+```
