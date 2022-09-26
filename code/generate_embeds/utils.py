@@ -120,15 +120,12 @@ def get_device():
         device_count = torch.cuda.device_count()
         device_current = torch.cuda.current_device()
         device_name = torch.cuda.get_device_name(device_current)
-        device = torch.device('cuda')
+        device = 'cuda'
         print(f'Found {device_count} GPU(s). \
               Using GPU {device_current}.    \
               Device name: {device_name}')
     else:
-        device = torch.device('cpu')
+        device = 'cpu'
         print('No GPU found. Using CPU.')
     return device
 
-
-if __name__ == '__main__':
-    device = get_device()
