@@ -11,6 +11,7 @@ maintainer: Vishnu Vardhan Dadi
 """
 
 import argparse as ap
+from operator import index
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
@@ -74,12 +75,9 @@ class CosineSimilarity:
         elif '.tsv' in rel_matrix_path:
             self.relavance_matrix = pd.read_csv(rel_matrix_path, sep='\t')
 
-        self.four_column_matrix = pd.DataFrame()
+        self.dataset = dataset
 
-        if dataset == 'TREC':
-            self.four_column_matrix['Rel-d2d'] = self.relavance_matrix['Rel-d2d']
-        elif dataset == 'RELISH':
-            self.four_column_matrix['Relevance'] = self.relavance_matrix['Relevance']
+        self.four_column_matrix = pd.DataFrame()
 
     def create_relavance_matrix(self, save_dir: str):
         """ Function that handles the creation of the 4 column matrix and saves
@@ -107,8 +105,15 @@ class CosineSimilarity:
                 continue
 
         self.four_column_matrix['PMID1'] =  pmid1_list
+
         self.four_column_matrix['PMID2'] =  pmid2_list
-        self.four_column_matrix['Rel-d2d'] =  rel_list
+
+        if self.dataset == 'TREC':
+            self.four_column_matrix['Rel-d2d'] =  rel_list
+
+        elif self.dataset == 'RELISH':
+            self.four_column_matrix['Relevance'] =  rel_list
+
         self.four_column_matrix['Cosine Similarity'] = cs_list
 
         if '.pkl' in save_dir:
