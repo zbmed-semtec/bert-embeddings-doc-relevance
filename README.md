@@ -9,11 +9,9 @@ This project uses [Sentence Transformers pkg](https://www.sbert.net/) for runnin
     - [Datasets](https://github.com/zbmed-semtec/bert-embeddings-doc-relevance#bert-embeddings-doc-relevance)
     - [Models](https://github.com/zbmed-semtec/bert-embeddings-doc-relevance#models)
     - [Data Preprocessing](https://github.com/zbmed-semtec/bert-embeddings-doc-relevance#data-preprocessing)
-
 2. [Cosine Similarity](https://github.com/zbmed-semtec/bert-embeddings-doc-relevance/tree/main/code/cosine_similarity#cosine-similarity-matrices)
     - [Generate Cosine Similarity Matrix](https://github.com/zbmed-semtec/bert-embeddings-doc-relevance/tree/main/code/cosine_similarity#cosine-similarity-matrix)
     - [Four column relevance matrix](https://github.com/zbmed-semtec/bert-embeddings-doc-relevance/tree/main/code/cosine_similarity#four-column-relevance-matrix)
-
 3. [BERT Embeddings](https://github.com/zbmed-semtec/bert-embeddings-doc-relevance/tree/main/code/generate_embeds#generate-bert-embeddings)
 
 
@@ -52,6 +50,7 @@ BERT models can be categorized into two types:
 As both TREC and RELISH corpora contain titles and abstracts of the scientific articles, there is no need of much preprocessing. Scientific documents won't contain any gebberish text or unneccessary special characters which may require careful preprocessing. So we use the `Cased` models for the experiments. The `Cased` models are better suited for biomedical domain as the biomedical domain contains a lot of abbreviations and acronyms.
 
 The only preprocessing steps applied to these corpora are:
+- combining the titles and abstracts of the articles as a single text
 - Removing the stop words
 - Removing unnecessary white spaces and new lines
 
