@@ -3,6 +3,21 @@ An approach exploring and assessing literature-based doc-2-doc recommendations u
 
 This project uses [Sentence Transformers pkg](https://www.sbert.net/) for running the experiments with BERT models. Sentence Transformers is a framework for sentence, text and image embeddings. It provides a wide range of pretrained models and state-of-the-art algorithms for semantic search and text classification. The models can be used directly for inference or fine-tuned on your own dataset. The models are available in PyTorch and TensorFlow 2.0. With Sentence Transformers package also supports all the models from [Hugging Face Transformers](https://huggingface.co/transformers/).
 
+### Contents
+
+1. [Introduction](https://github.com/zbmed-semtec/bert-embeddings-doc-relevance#bert-embeddings-doc-relevance)
+    - [Datasets](https://github.com/zbmed-semtec/bert-embeddings-doc-relevance#bert-embeddings-doc-relevance)
+    - [Models](https://github.com/zbmed-semtec/bert-embeddings-doc-relevance#models)
+    - [Data Preprocessing](https://github.com/zbmed-semtec/bert-embeddings-doc-relevance#data-preprocessing)
+
+2. [Cosine Similarity](https://github.com/zbmed-semtec/bert-embeddings-doc-relevance/tree/main/code/cosine_similarity#cosine-similarity-matrices)
+    - [Generate Cosine Similarity Matrix](https://github.com/zbmed-semtec/bert-embeddings-doc-relevance/tree/main/code/cosine_similarity#cosine-similarity-matrix)
+    - [Four column relevance matrix](https://github.com/zbmed-semtec/bert-embeddings-doc-relevance/tree/main/code/cosine_similarity#four-column-relevance-matrix)
+
+3. [BERT Embeddings](https://github.com/zbmed-semtec/bert-embeddings-doc-relevance/tree/main/code/generate_embeds#generate-bert-embeddings)
+
+
+
 ### Datasets
 
 The datasets used for experiments are:
