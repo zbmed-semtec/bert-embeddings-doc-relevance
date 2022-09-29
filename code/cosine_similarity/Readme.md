@@ -50,6 +50,15 @@ cs_mat = create_cs_matrix(embeds_path = embed_file_path,
 # print the cosine similarity matrix
 print(cs_mat.head())
 ```
+The output is an upper triangular cosine similarity matrix in the form of a pandas dataframe and it looks like this:
+
+|       | pmid1 | pmid2 | pmid3 | pmid4 | pmid5 |
+| ----- | ----- | ----- | ----- | ----- | ----- |
+| pmid1 | 1     | 0.78  | 0.56  | 0.92  | 0.99  |
+| pmid2 | 0     | 1     | 0.56  | 0.74  | 0.23  |
+| pmid3 | 0     | 0     | 1     | 0.45  | 0.94  |
+| pmid4 | 0     | 0     | 0     | 1     | 0.56  |
+| pmid5 | 0     | 0     | 0     | 0     | 1     |
 
 ## Four column relevance matrix
 
