@@ -10,6 +10,9 @@ maintainer: Vishnu Vardhan Dadi
 """
 
 import argparse
+import os
+import sys
+sys.path.insert(0, '../')
 
 import numpy as np
 import pandas as pd
@@ -18,8 +21,10 @@ from torch.utils.data import DataLoader
 from sentence_transformers import SentenceTransformer, InputExample
 from sentence_transformers import evaluation, losses
 
+from generate_embeds.datamodule import DataPreprocess
 
-MODEL_NAME = 'dmis-lab/biobert-large-cased-v1.1'
+
+MODEL_NAME = 'dmis-lab/biobert-base-cased-v1.1'
 
 class TuneBert:
     """
@@ -27,7 +32,8 @@ class TuneBert:
         scores are available.
     """
     def __init__(self, dataset_path: str, rel_data_path: str,
-                 model_name: str = MODEL_NAME, batch_size: int = 8):
+                 model_name: str = MODEL_NAME, batch_size: int = 8,
+                 loss_func: str = 'MNRLoss'):
         """
             Initialize the class with the dataset and the relavance scores
             as a pandas dataframe. Prepares the data for training. Loads the
@@ -42,52 +48,63 @@ class TuneBert:
             model_name (str, optional): name of the model to be used.
                                         Defaults to bio_bert_large_cased.
             batch_size (int, optional): batch size for training. Defaults to 8.
+            loss_func (str, optional): loss function to be used for training.
+                                        ('CosiineSimilarityLoss'/'MNRLoss')
+                                        Defaults to MNRLoss.
         """
 
-        self.data = pd.read_csv(dataset_path, sep='\t')
+        # loaidng and preparing the data
+        data_preprocess = DataPreprocess(dataset_path)
+        self.text_data = data_preprocess.text_normalize()
         self.rel_data = pd.read_csv(rel_data_path, sep='\t')
-        self.sentences1 = []
-        self. sentences2 = []
-        self.scores = []
-        train_data = self.prepare_data()
-        self.train_dataloader = DataLoader(train_data, shuffle=True,
+        self.train_data = self.prepare_data()
+        self.train_dataloader = DataLoader(self.train_data, shuffle=True,
                                            batch_size= batch_size)
+
+        # creating the model object
         self.model = SentenceTransformer(model_name)
-        self.train_loss = losses.CosineSimilarityLoss(self.model)
-        self.evaluator = evaluation.EmbeddingSimilarityEvaluator(self.sentences1,
-                                                self.sentences2, self.scores)
+
+        # preparing the loss function
+        self.loss_func = loss_func
+        if loss_func == 'CosineSimilarityLoss':
+            self.train_loss = losses.CosineSimilarityLoss(self.model)
+        if loss_func == 'MNRLoss':
+            self.train_loss = losses.MultipleNegativesRankingLoss(self.model)
 
     def prepare_data(self):
-        """ Prepares the data for training as per the sentence transformer
-            package requirements.
-            More info: https://www.sbert.net/docs/training/overview.html
-        Returns:
-            data (InputExample): list of InputExample objects
-        """
         data = []
-        abstracts = self.data['abstract'].to_numpy()
-        pmid_column =self.data['PMID'].to_numpy()
-        for pmid1,pmid2,relv in tqdm(self.rel_data.to_numpy()):
+        abstracts = self.text_data['text'].to_numpy()
+        pmid_column = self.text_data['PMID'].to_numpy()
+        for pmid1,pmid2,relv in tqdm(self.rel_data.to_numpy(),
+                                        desc='Preparing train-data'):
             text1 = abstracts[np.where(pmid_column == pmid1)[0]]
             text2 = abstracts[np.where(pmid_column == pmid2)[0]]
-            if relv == 0: label = 0.3
-            if relv == 1: label = 0.6
-            if relv == 2: label  = 0.9
-            if len(text1)>0 and len(text2)>0:
-                text1 = text1.tolist()[0]
-                text2 = text2.tolist()[0]
-                data.append(InputExample(texts=[text1, text2],
-                                            label=label))
-                self.sentences1.append(text1)
-                self.sentences2.append(text2)
-                self.scores.append(label)
-            else:
-                continue
+            if self.loss_func == 'CosineSimilarityLoss':
+                if relv == 0: label = 0.3
+                if relv == 1: label = 0.6
+                if relv == 2: label  = 0.9
+                if len(text1)>0 and len(text2)>0:
+                    text1 = text1.tolist()[0]
+                    text2 = text2.tolist()[0]
+                    data.append(InputExample(texts=[text1, text2],
+                                                label=label))
+                else:
+                    continue
+
+            elif self.loss_func == 'MNRLoss': # Multiple negatives ranking loss
+                if relv == 2:
+                    label = 1
+                    if len(text1)>0 and len(text2)>0:
+                        text1 = text1.tolist()[0]
+                        text2 = text2.tolist()[0]
+                        data.append(InputExample(texts=[text1, text2],
+                                                    label=label))
+                else:
+                    continue
 
         return data
 
-    def train(self,  save_dir: str, epochs: int = 2, warmup_steps: int = 100,
-              evaluation_steps: int = 500):
+    def train(self,  save_dir: str, epochs: int = 2):
         """
             Trains the model for the given number of epochs and saves the
             model to the disk.
@@ -99,12 +116,23 @@ class TuneBert:
                                                 Defaults to 500.
         """
 
+        warmup_steps = int(len(self.train_dataloader) * epochs * 0.1)
         self.model.fit(train_objectives = [(self.train_dataloader, self.train_loss)],
                         epochs=epochs,
                         warmup_steps = warmup_steps,
-                        evaluator = self.evaluator,
-                        evaluation_steps = evaluation_steps,
                         output_path = save_dir)
+
+    def evaluate(self, save_path: str):
+        """
+            Evaluates the model on the test data with
+        Args:
+            save_path (str): path to save the evaluation results.
+        """
+        evaluator = evaluation.EmbeddingSimilarityEvaluator.from_input_examples(
+                            self.train_data, name='train', batch_size=8,
+                                show_progress_bar=True, write_csv=True)
+
+        evaluator(self.model, output_path=save_path)
 
 
 if __name__ == '__main__':
@@ -114,22 +142,20 @@ if __name__ == '__main__':
                         help='path to the dataset')
     parser.add_argument('--rel_data_path', type=str, required=True,
                         help='path to the relevance data')
-    parser.add_argument('--save_dir', type=str, required=True,
+    parser.add_argument('--save_train', type=str, required=True,
                         help='path to save the model')
+    parser.add_argument('--save_eval', type=str, default=os.getcwd(),
+                        help='path to save the evaluation results')
     parser.add_argument('--epochs', type=int, default=2,
                         help='number of epochs to train')
-    parser.add_argument('--warmup_steps', type=int, default=100,
-                        help='number of warmup steps')
-    parser.add_argument('--evaluation_steps', type=int, default=500,
-                        help='number of evaluation steps')
     parser.add_argument('--batch_size', type=int, default=8,
                         help='batch size for training')
+    parser.add_argument('--loss_func', type=str, default='MNRLoss',
+                        help='loss function to be used for training')
     args = parser.parse_args()
 
     tune = TuneBert(dataset_path=args.dataset_path,
                     rel_data_path=args.rel_data_path,
-                    batch_size=args.batch_size)
-    tune.train(save_dir=args.save_dir, epochs=args.epochs,
-                warmup_steps=args.warmup_steps,
-                evaluation_steps=args.evaluation_steps)
-
+                    batch_size=args.batch_size,
+                    loss_func=args.loss_func)
+    tune.train(save_dir=args.save_dir, epochs=args.epochs)
