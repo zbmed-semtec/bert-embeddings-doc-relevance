@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from numba import njit
+from numba_progress import ProgressBar
 
 
 @njit(fastmath=True)
@@ -42,6 +43,32 @@ def cosine_similarity_numba(u: np.ndarray, v: np.ndarray)->np.float64:
         cos_theta = uv/np.sqrt(uu*vv)
     return cos_theta
 
+@njit(fastmath=True, nogil=True)
+def cs_matrix(embeds: np.array, progress_proxy: tqdm)->np.array:
+    """ Creates a upper tringular cosine similarity matrix for all pmid pairs
+
+    Args:
+        embeds (np.array): all embeddings in an numpy array
+        progress_proxy (tqdm): tqdm progress bar proxy object to show progress
+
+    Returns:
+        np.array: upper triangular cosine similarity matrix
+    """
+    similarity_matrix  = np.zeros((embeds.shape[0], embeds.shape[0]),
+                                    dtype=np.float32)
+    for i in range(embeds.shape[0]):
+        embed1 = embeds[i]
+        for j in range(embeds.shape[0]):
+            embed2 = embeds[j]
+            if j < i:
+                continue
+            else:
+                similarity_matrix[i,j] = round(
+                                    cosine_similarity_numba(embed1,embed2),4)
+        progress_proxy.update(1)
+    return similarity_matrix
+
+
 def create_cs_matrix(embeds_path: str, save_path: str, compression: bool = True,
                         return_df: bool = False)->pd.DataFrame:
     """ Creates a upper tringular cosine similarity matrix for all pmid pairs
@@ -62,17 +89,11 @@ def create_cs_matrix(embeds_path: str, save_path: str, compression: bool = True,
     """
     data = pd.read_pickle(embeds_path)
 
-    pmids = data['PMID'].values
-    embeds = data['embedding'].values
-    similarity_matrix = np.zeros((len(pmids), len(pmids)))
+    pmids = np.array(data['PMID'].tolist(), dtype=np.int64)
+    embeds = np.array(data['embedding'].tolist(), dtype=np.float32)
 
-    for i in tqdm(range(len(pmids)), desc='Computing cosine similarity'):
-        embed1 = embeds[i]
-        for j in range(len(pmids)):
-            embed2 = embeds[j]
-            if j<i:
-                similarity_matrix[i, j] = round(cosine_similarity_numba(
-                                            np.array(embed1),np.array(embed2)), 4)
+    with ProgressBar(total=embeds.shape[0]) as progress:
+        similarity_matrix = cs_matrix(embeds, progress)
 
     df = pd.DataFrame(similarity_matrix, columns=pmids, index=pmids)
 
