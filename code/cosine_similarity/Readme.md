@@ -60,6 +60,8 @@ The output is an upper triangular cosine similarity matrix in the form of a pand
 | pmid4 | 0     | 0     | 0     | 1     | 0.56  |
 | pmid5 | 0     | 0     | 0     | 0     | 1     |
 
+**Note:** The cosine similarity values are stored in `numpy.float32` dtype and values are rounded to 4 decimal places.
+
 ## Four column relevance matrix
 
 To generate the [four column relevance matrix](https://github.com/zbmed-semtec/bert-embeddings-doc-relevance/blob/main/code/cosine_similarity/existing_pairs.py) two input files are required:
