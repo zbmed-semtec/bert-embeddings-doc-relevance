@@ -14,7 +14,7 @@ This project uses [Sentence Transformers pkg](https://www.sbert.net/) for runnin
     - [Four column relevance matrix](https://github.com/zbmed-semtec/bert-embeddings-doc-relevance/tree/main/code/cosine_similarity#four-column-relevance-matrix)
 3. [Generate Embeddings](https://github.com/zbmed-semtec/bert-embeddings-doc-relevance/tree/main/code/generate_embeds#generate-bert-embeddings)
 4. [Fine-tune BERT]()
-5. [Evaluation]()
+5. [Evaluation](https://github.com/zbmed-semtec/bert-embeddings-doc-relevance/tree/main/code/evaluation#evaluation-of-the-doc-to-doc-relevance-task-with-bert-embeddings)
 
 
 ### Datasets
@@ -36,7 +36,7 @@ Two state-of-the-art BERT models relevant to the biomedical domain are used to r
 
 2. [**SciBERT**](https://doi.org/10.48550/arXiv.1903.10676)
     SciBERT is a pretrained language model based on BERT but trained on a large corpus of scientific text. Model trained on 1.14M papers from semantic scholar (18% - Computer science, 82% - Biomedical domain). corpus size - 3.17B Tokens.
-    - [allenai/scibert-scivocab-cased](https://huggingface.co/allenai/scibert_scivocab_cased)
+    - [allenai/scibert_scivocab_cased](https://huggingface.co/allenai/scibert_scivocab_cased)
 
 ### Data Preprocessing
 
