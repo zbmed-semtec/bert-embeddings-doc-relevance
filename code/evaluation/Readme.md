@@ -42,8 +42,10 @@ The loss fucntions used for the fine-tuning are:
 | Model                    | Fine-tuning | Loss-Function | Epochs | AUC  |
 |:------------------------:|:-----------:|:-------------:|:------:|:----:|
 | biobert-base-cased-v1.1  | No          | -             | -      | 0.75 |
+| biobert-base-cased-v1.1  | Yes         | MNL           | 2      | 0.54 |
 | biobert-large-cased-v1.1 | No          | -             | -      | 0.73 |
 | scibert-scivocab-cased   | No          | -             | -      | 0.76 |
+| scibert-scivocab-cased   | Yes         | MNL           | 2      | 0.45 |
 
 
 **RELISH:** The table below shows the results of the distribution analysis for the RELISH dataset.
@@ -56,8 +58,10 @@ The loss fucntions used for the fine-tuning are:
 | biobert-base-cased-v1.1  | Yes         | CSL           | 2      | 1.0  |
 | biobert-large-cased-v1.1 | No          | -             | -      | 0.60 |
 | biobert-large-cased-v1.1 | Yes         | MNL           | 2      | 0.57 |
+| biobert-large-cased-v1.1 | Yes         | MNL           | 4      | 0.54 |
 | scibert-scivocab-cased   | No          | -             | -      | 0.65 |
 | scibert-scivocab-cased   | Yes         | MNL           | 2      | 0.57 |
+| scibert-scivocab-cased   | Yes         | MNL           | 4      | 0.52 |
 
 
 
