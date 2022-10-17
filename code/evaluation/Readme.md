@@ -39,6 +39,12 @@ The loss fucntions used for the fine-tuning are:
 
 **TREC-simplified:** The table below shows the results of the distribution analysis for the TREC-simplified dataset.
 
+| Model                    | Fine-tuning | Loss-Function | Epochs | AUC  |
+|:------------------------:|:-----------:|:-------------:|:------:|:----:|
+| biobert-base-cased-v1.1  | No          | -             | -      | 0.75 |
+| biobert-large-cased-v1.1 | No          | -             | -      | 0.73 |
+| scibert-scivocab-cased   | No          | -             | -      | 0.76 |
+
 
 **RELISH:** The table below shows the results of the distribution analysis for the RELISH dataset.
 
