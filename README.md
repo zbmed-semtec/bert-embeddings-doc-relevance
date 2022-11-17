@@ -51,6 +51,6 @@ As both TREC and RELISH corpora contain titles and abstracts of the scientific a
 
 The only preprocessing steps applied to these corpora are:
 - combining the titles and abstracts of the articles as a single text
-- Removing the stop words
+
 - Removing unnecessary white spaces and new lines
 
