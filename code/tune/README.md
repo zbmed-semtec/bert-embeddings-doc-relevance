@@ -1,7 +1,7 @@
 
 
 
-###[Cosine Similarity Loss](https://www.sbert.net/docs/package_reference/losses.html#cosinesimilarityloss)(CSL)
+### [Cosine Similarity Loss](https://www.sbert.net/docs/package_reference/losses.html#cosinesimilarityloss)(CSL)
 
 In cosine similarity loss, the cosine similarity between the query and the Negative document is maximized, while the cosine similarity between the query and the positive document is minimized. The cosine similarity between the embedding pairs is compared with the ground truth relavance score (In our case we get it from the RELISH relevance file). Below table shows the relevance scores from the RELISH relevance document mapped to the cosine similarity scores as per the loss function described in sentence-transformers paper.
 
@@ -13,10 +13,10 @@ In cosine similarity loss, the cosine similarity between the query and the Negat
 
 The loss function is defined as:
 
-$   v = M(s1) \\
-    u = M(s2) \\
-    S =  \frac{(u * v)}{(||u|| * ||v||)} \\
-    CSL = ||GT - S||_2 $
+ $$ v = M(s1) $$
+    $$ u = M(s2) $$
+    $$ S =  \frac{(u * v)}{(||u|| * ||v||)} $$
+    $$ CSL = ||GT - S||_2 $$
 
 Here `v` and `u` = embeddings
     `M` = model
