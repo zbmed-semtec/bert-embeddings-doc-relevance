@@ -13,10 +13,13 @@ In cosine similarity loss, the cosine similarity between the query and the Negat
 
 The loss function is defined as:
 
- $$ v = M(s1) $$
-    $$ u = M(s2) $$
-    $$ S =  \frac{(u * v)}{(||u|| * ||v||)} $$
-    $$ CSL = ||GT - S||_2 $$
+ $$ v = M(s1)
+
+    u = M(s2)
+
+     S =  (u * v)/(||u|| * ||v||)
+
+     CSL = ||GT - S||_2 $$
 
 Here `v` and `u` = embeddings
     `M` = model
