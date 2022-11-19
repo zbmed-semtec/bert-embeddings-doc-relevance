@@ -97,11 +97,11 @@ def create_cs_matrix(embeds_path: str, save_path: str, compression: bool = True,
 
     df = pd.DataFrame(similarity_matrix, columns=pmids, index=pmids)
 
-    if compression:
-        df.to_pickle(save_path, compression='gzip')
+    if '.tsv' in save_path:
+        df.to_csv(save_path, sep='\t', compression='gzip' if compression else None)
 
-    else:
-        df.to_pickle(save_path)
+    if '.pkl' in save_path:
+        df.to_pickle(save_path, compression='gzip' if compression else None)
 
     if return_df:
         return df
