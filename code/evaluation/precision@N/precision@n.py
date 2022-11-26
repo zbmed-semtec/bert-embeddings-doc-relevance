@@ -1,175 +1,229 @@
+""" 
+This python script contains the code to compute the precision@N matrix for the
+TREC and RELISH datasets.
 
-import argparse as ap
-from traceback import print_tb
+author: Vishnu Vardhan Dadi
+credits: [Leyla Jael Castro, Dietrich Rebholz-Schuhmann]
+copyright: GENERAL PUBLIC LICENSE Version 3, 29 June 2007
+"""
+
+from multiprocessing import Pool
+from typing import List
+import argparse
 import warnings
-import concurrent.futures
-
-import pandas as pd
-from tqdm import tqdm
-import numpy as np
-
-warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.filterwarnings('ignore')
 
-class PrecisionN:
+import pandas as pd
+import numpy as np
+from numba import njit
+from tqdm import tqdm
+
+
+@njit(fastmath=True)
+def get_cosine_similarity(
+    u: np.ndarray,
+    v: np.ndarray
+    )->np.float64:
+    """ Computes the cosine similarity between two vectors using numba.
+        The cosine similarity is defined as:
+
+                Cos(x, y) = x . y / ||x|| * ||y||
+
+    Args:
+        u (np.ndarray): vector 1 of shape (n,) which is embedding1.
+        v (np.ndarray): vector 2 of shape (n,) which is embedding2.
+
+    Returns:
+        np.float64: cosine similarity between u and v vectors
     """
-        This Class represents the precision@N evaluation method.
+    assert(u.shape[0] == v.shape[0])
+
+    uv = 0
+    uu = 0
+    vv = 0
+    for i in range(u.shape[0]):
+        uv += u[i]*v[i]
+        uu += u[i]*u[i]
+        vv += v[i]*v[i]
+    cos_theta = 1
+    if uu!=0 and vv!=0:
+        cos_theta = uv/np.sqrt(uu*vv)
+    return cos_theta
+
+
+@njit(fastmath=True)
+def cosine_similarity_row(
+    embeds: np.array,
+    row_idx: int,
+    n: int 
+    )->np.array:
+    """ Indentifies the top n most similar pmids in each 
+        row of the cosine similarity matrix.
+
+    Args:
+        embeds (np.array): array of embeddings for each pmid in the dataset
+        row_idx (int): row index of the cosine similarity matrix
+        n (int): number of top n similar pmids to retrieve
+
+    Returns:
+        np.array: idx of the pmid with the top n most similar pmids
     """
-    def __init__(self, mat_path: str, rel_path: str, relavance: str = None):
-        """ Reads the cosine similarity matrix and the relavance data into a
-            pandas dataframe. Initializes the precision@n dataframe and class
-            variables.
-
-        Args:
-            mat_path (str): path to the cosine similarity matrix
-            tsv_path (str): path to the relavance data
-            relavance (str): if 'simplified' argument is passed, relavance
-                             column is conisdered as (1==2).
-        """
-        # n values to find precision at
-        self.n_at = [5,10,15,20,25,50]
-
-        # read the cosine similarity matrix as a pandas dataframe
-        if ".tsv" in mat_path:
-            self.mat_data = pd.read_csv(mat_path, sep='\t')
-
-        if ".pkl" in mat_path:
-            try:
-                self.mat_data = pd.read_pickle(mat_path)
-            except:
-                self.mat_data = pd.read_pickle(mat_path, compression='gzip')
-            else:
-                self.mat_data = pd.read_pickle(mat_path,compression='infer')
+    cs_row = np.zeros((embeds.shape[0],), dtype=np.float32)
+    idxs = np.zeros((n), dtype=np.int64)
+    for i in range(embeds.shape[0]):
+        if i == row_idx:
+            embed1 = embeds[i]
+            for j in range(embeds.shape[0]):
+                embed2 = embeds[j]
+                cs_row[j] = get_cosine_similarity(embed1, embed2)
+            break
 
 
-        # read the relavance data as a pandas dataframe
-        if ".tsv" in rel_path:
-            self.tsv_data = pd.read_csv(rel_path, sep='\t')
+    topn =  np.sort(cs_row)[::-1][1:n+1]
 
-        if ".pkl" in rel_path:
-            try:
-                self.tsv_data = pd.read_pickle(rel_path)
-            except:
-                self.tsv_data = pd.read_pickle(rel_path, compression='infer')
-            else:
-                self.tsv_data = pd.read_pickle(rel_path, compression='gzip')
+    # finding indexes of top n values in cs_row
+    for i in range(n):
+        idxs[i] = np.where(cs_row == topn[i])[0][0]
 
-        # initialize the precision@n dataframe
-        self.pn_df = pd.DataFrame(columns=['PMID'])
-        for n in self.n_at:
-            self.pn_df['p@'+str(n)] = []
+    return idxs
 
-        if relavance == 'simplified':
-            self.relv = 1 or 2
-        else:
-            self.relv = 2
+def calculate_tps(
+    pmids: np.array,
+    rel_pmid1_col: np.array,
+    rel_pmid2_col: np.array,
+    rel_label_col: np.array,
+    embeds: np.array,
+    N: int,
+    relvance: int = 2
+    )->tuple(int, list):
+    """ 
+    
+    Args:
+        pmids (np.array): array of all pmids in the dataset
+        rel_pmid1_col (np.array): array of pmids in the first column of the relevance file
+        rel_pmid2_col (np.array): array of pmids in the second column of the relevance file
+        rel_label_col (np.array): array of labels in the relevance column of the relevance file
+        embeds (np.array): array of embeddings for each pmid in the dataset
+        N (int): number of top n similar pmids to retrieve
+        relvance (int): relevance level to consider. Defaults to 2.
+        
+    Returns:
+        tuple(int, list): tuple with column n and presicion array w.r.t to n
+    """
 
-        # class variables to handle matrix data
-        self.pn_df['PMID'] = self.mat_data.index.tolist()
-        self.headers = self.mat_data.columns.tolist()
-        self.sort_rows()
+    p_array = np.zeros((pmids.shape[0],), dtype=np.float32)
+    for i in tqdm(range(len(pmids)),total=len(pmids), desc=f'calc p@{N}'):
 
-    def sort_rows(self):
-        """ Function to sort all rows in the cosine similarity matrix in descending
-            order."""
+        tp =0
+        pmid1 = pmids[i]
+        topn_idxs = cosine_similarity_row(embeds, row_idx=i, n=N)
+        for i in topn_idxs:
+            pmid2 = pmids[i]
 
-        for idx,row in tqdm(enumerate(self.mat_data.values), total=len(self.mat_data),
-                        desc="Sorting matrix rows"):
-            self.mat_data.iloc[idx] = np.sort(row)[::-1]
+            if pmid1 == pmid2:
+                continue
 
-    def find_relavance(self, pmid1 : str, pmid2 : str):
-        tsv_pmid1 = self.tsv_data['PMID1'].to_numpy()
-        tsv_pmid2 = self.tsv_data['PMID2'].to_numpy()
-        tsv_rel = self.tsv_data['Rel-d2d'].to_numpy()
-        return tsv_rel[np.where((tsv_pmid1 == pmid1) & (tsv_pmid2 == pmid2))]
+            pmid1_idxs = np.where(rel_pmid1_col == pmid1)[0]
+            pmid2_idxs = np.where(rel_pmid2_col == pmid2)[0]
+            common_idx = np.intersect1d(pmid1_idxs, pmid2_idxs)
 
+            if not common_idx:
+                pmid1_idxs = np.where(rel_pmid2_col == pmid1)[0]
+                pmid2_idxs = np.where(rel_pmid1_col == pmid2)[0]
+                common_idx = np.intersect1d(pmid1_idxs, pmid2_idxs)
 
-    def find_topn(self, n: int):
-        """ Finds the precision at each 'n' value passes to the function and
-            adds it to the initialised precision@n dataframe.
-
-        Args:
-            n (int):  precision @ n value to find
-        """
-        p_list = []
-        for index,row in tqdm(zip(self.mat_data.index, self.mat_data.values),
-                                total= len(self.mat_data.index),
-                                 desc=f"Finding precision@{n}"):
-
-            tp = 0
-            pmid1 = index
-            topn = row[1:n+1]
-            for value in topn:
-                pmid2 = self.headers[np.where(row==value)[0][0]]
-                if pmid1 == pmid2:
-                    continue
-                if self.tsv_data.loc[(self.tsv_data['PMID1'] == pmid1) &
-                                    (self.tsv_data['PMID2'] == pmid2)]['Rel-d2d'].values == self.relv:
+            if common_idx:
+                rel_label = rel_label_col[common_idx[0]]
+                if rel_label == relvance:
                     tp += 1
-
-            try:
-                precision = tp/n
-            except ZeroDivisionError as error:
-                print(error)
-                precision = 0.0
-
-            p_list.append(precision)
-
-        self.pn_df['p@'+str(n)] = p_list
+        p_array[i] = tp/N
+    return (N,p_array)
 
 
-        # for index in tqdm(self.indices, desc="Finding precision@"+str(n)):
-        #     tp = 0
-        #     pmid1 = index
-        #     row =
-        #     row = sorted(self.mat_data.loc[index].values.tolist(), reverse=True)
-        #     topn_values = row[1:n+1]
-        #     for value in topn_values:
-        #         pmid2 = self.headers[row.index(value)]
-        #         if self.tsv_data.loc[(self.tsv_data['PMID2'] == pmid2) &
-        #             (self.tsv_data['PMID1'] == pmid1)]['Rel-d2d'].values == self.relv:
 
-        #             tp += 1
+def create_precision_matrix(
+    embed_path: str,
+    rel_path: str,
+    save_path: str,
+    dataset: str = 'TREC',
+    n_values: list = [ 5, 10, 15, 20, 25, 50]
+    )->None:
+    """ Loads the embeddings and relevance data and calculates the precision@N
+       and saves the results in a tsv/pkl file.
 
-        #     # to avoid division by zero error,
-        #     # if no relevant documents are found,
-        #     # precision is set to 0
-        #     try:
-        #         self.pn_df['p@'+str(n)].loc[index] = tp/n
-        #     except ZeroDivisionError:
-        #         self.pn_df['p@'+str(n)].loc[index] = 0.0
+    Args:
+        embed_path (str): path to the embeddings file
+        rel_path (str): path to the three column relevance file
+        save_path (str): path to save the precision@N matrix
+        dataset (str, optional): Datasets: TREC/RELISH. Defaults to 'TREC'.
+        n_values (list, optional): N values to calcuate the precision at.
+                                     Defaults to [ 5, 10, 15, 20, 25, 50].
+    """
 
-    def create_precision_matrix(self, save_path: str):
-        """ Computes the precision at each n value and saves the dataframe to
-            pickle/tsv file.
+    # load embeddings data frame
+    data = pd.read_pickle(embed_path)# compression='gzip')
+    pmids  = np.array(data['PMID'].tolist(), dtype=np.int64)
+    embeds = np.array(data['embedding'].tolist(), dtype=np.float32)
 
-        Args:
-            save_path (str): path to save the precision matrix
-        """
-        with concurrent.futures.ProcessPoolExecutor() as executor:
-            executor.map(self.find_topn, self.n_at)
+    # load relevance data frame
+    if dataset == 'RELISH':
+        rel_data = pd.read_csv(rel_path, sep='\t',
+                                 names=['PMID1','PMID2','relevance'])
 
-        # adding avg precision to the dataframe
-        avg_list = self.pn_df.mean(axis=0).tolist()
-        self.pn_df.loc['avg'] = avg_list
+    elif dataset == 'TREC':
+        rel_data = pd.read_csv(rel_path, sep='\t')
+    rel_pmid1_col = rel_data['PMID1'].to_numpy(dtype=np.int64)
+    rel_pmid2_col = rel_data['PMID2'].to_numpy(dtype=np.int64)
+    if dataset == 'TREC':
+        rel_label_col = rel_data['Rel-d2d'].to_numpy(dtype=np.int64)
+    if dataset == 'RELISH':
+        rel_label_col = rel_data['relevance'].to_numpy(dtype=np.int64)
 
-        if ".pkl" in save_path:
-            self.pn_df.to_pickle(save_path)
-        if ".tsv" in save_path:
-            self.pn_df.to_csv(save_path, sep='\t', index=False)
+    # precision data frame setup
+    pn_df = pd.DataFrame()
+    pn_df['PMID'] = pmids
+
+    relevance = 2
+    items = [(pmids, rel_pmid1_col, rel_pmid2_col, rel_label_col, embeds, N, relevance) for N in n_values]
+
+    with Pool() as pool:
+        results = list(pool.starmap(calculate_tps, items))
+
+    for n,p_list in results:
+        pn_df['p@'+str(n)] = p_list
+
+
+    avg_list = pn_df.mean(axis=0).tolist()
+    pn_df.loc['avg'] = avg_list
+
+    if '.tsv' in save_path:
+        pn_df.to_csv(save_path, sep='\t')
+
+    if '.pkl' in save_path:
+        pn_df.to_pickle(save_path)
+
 
 if __name__ == '__main__':
-    aps = ap.ArgumentParser()
-    aps.add_argument("-m", "--matrix_path", help="path to the cosine similarity matrix", required=True)
-    aps.add_argument("-r", "--relavance_path", help="path to the relavance data", required=True)
-    aps.add_argument("-s", "--save_path", help="path to save the precision matrix", required=True)
-    aps.add_argument("-rel", "--relavance", help="if 'simplified' argument is passed, \
-                                    relavance column is conisdered as (1==2)", default=None)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--embed_path', type=str, required=True,
+                        help='path to the embeddings file')
 
-    args = aps.parse_args()
+    parser.add_argument('--rel_path', type=str, required=True,
+                        help='path to the three column relevance file')
 
-    precision_n = PrecisionN(mat_path = args.matrix_path,
-                             rel_path = args.relavance_path,
-                             relavance= args.relavance)
-    precision_n.n_at = [5,10,15,20,25,50] # pass only list, if wanted new set of n values
-    precision_n.create_precision_matrix(save_path = args.save_path)
+    parser.add_argument('--save_path', type=str, required=True,
+                        help='path to save the precision@N matrix')
+
+    parser.add_argument('--dataset', type=str, default='TREC',
+                        help='Datasets: TREC/RELISH')
+    
+    parser.add_argument('--n_values', type=List, default=[ 5, 10, 15, 20, 25, 50],
+                        help='N values to calcuate the precision at')
+
+    args = parser.parse_args()
+    
+    create_precision_matrix(embed_path=args.embed_path,
+                            rel_path=args.rel_path,
+                            save_path=args.save_path,
+                            dataset=args.dataset,
+                            n_values=args.n_values)
