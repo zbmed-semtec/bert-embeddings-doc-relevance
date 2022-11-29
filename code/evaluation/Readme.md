@@ -96,5 +96,29 @@ The below table contains following columns:
 | BioBERT-large | 0.634        | 0.619         | 0.622         | 0.632         | 0.648         | 0.765         |
 | SciBERT       | 0.646        | 0.629         | 0.632         | 0.640         | 0.655         | 0.771         |
 
+## Precision@N method
+
+The following tables show the results of the precision@N evaluation approach, when applied on to "BERT doc2doc relevance" technique. 
+
+The below table contains following columns:
+
+- **Model:** Model used to obtain these results.
+- **Dataset:** Dataset used to obtain these results. (TREC-repurposed, TREC-simplified, RELISH)
+- **Precision@5:** Precision score for the top 5 articles retrieved.
+- **Precision@10:** Precision score for the top 10 articles retrieved.
+- **Precision@15:** Precision score for the top 15 articles retrieved.
+- **Precision@20:** Precision score for the top 20 articles retrieved.
+- **Precision@25:** Precision score for the top 25 articles retrieved.
+- **Precision@50:** Precision score for the top 50 articles retrieved.
+
+
+|Model     |Dataset     |p@5                 |p@10                |p@15                |p@20                 |p@25                |p@50                |
+|:--------:|:----------:|:------------------:|:------------------:|:------------------:|:-------------------:|:------------------:|:------------------:|
+|bert-base | relish.pkl |0.0042|0.0060| 0.0066 |0.0074|0.0086|0.0104|
+|bert-base |trec-rep.pkl|0.0121|0.0134|0.0142|0.0145 |0.0146|0.0152|
+|bert-large| relish.pkl |0.0037|0.0054|0.0060|0.0068 |0.0079|0.0097|
+|bert-large|trec-rep.pkl|0.0114 |0.0134 |0.0137|0.0140|0.0143|0.0148|
+| bert-sci | relish.pkl |0.0041|0.0060|0.0066|0.0074 |0.0085|0.01026|
+| bert-sci |trec-rep.pkl|0.0130|0.0136|0.0141|0.0150 |0.0150|0.0155|
 
 
