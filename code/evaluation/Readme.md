@@ -63,6 +63,38 @@ The loss fucntions used for the fine-tuning are:
 | scibert-scivocab-cased   | Yes         | MNL           | 2      | 0.57 |
 | scibert-scivocab-cased   | Yes         | MNL           | 4      | 0.52 |
 
+## Discounted cumulative gain method
+
+The following tables show the results of the [nDCG@N](https://github.com/zbmed-semtec/medline-preprocessing/tree/main/code/Evaluation) evaluation approach, when applied on to "BERT doc2doc relevance" technique. 
+These results are calculated for the different models used in this approach to obtain the optimal model for each dataset used in this work.
+
+The below table contains following columns:
+
+- **Model:** Model used to obtain these results.
+- **nDCG@5 (AVG):** Normalized Discounted Cumulative Gain (nDCG) score for the top 5 articles retrieved.
+- **nDCG@10 (AVG):** Normalized Discounted Cumulative Gain (nDCG) score for the top 10 articles retrieved.
+- **nDCG@15 (AVG):** Normalized Discounted Cumulative Gain (nDCG) score for the top 15 articles retrieved.
+- **nDCG@20 (AVG):** Normalized Discounted Cumulative Gain (nDCG) score for the top 20 articles retrieved.
+- **nDCG@25 (AVG):** Normalized Discounted Cumulative Gain (nDCG) score for the top 25 articles retrieved.
+- **nDCG@50 (AVG):** Normalized Discounted Cumulative Gain (nDCG) score for the top 50 articles retrieved.
+
+
+**TREC-repurposed:** The table below shows the results of the nDCG@N evaluation for the TREC-repurposed dataset.
+
+| Model         | nDCG@5 (AVG) | nDCG@10 (AVG) | nDCG@15 (AVG) | nDCG@20 (AVG) | nDCG@25 (AVG) | nDCG@50 (AVG) |
+|:-------------:|:------------:|:-------------:|:-------------:|:-------------:|:-------------:|:-------------:|
+| BioBERT-base  | 0.519        | 0.510         | 0.506         | 0.505         | 0.505         | 0.513         |
+| BioBERT-large | 0.510        | 0.502         | 0.497         | 0.496         | 0.495         | 0.503         |
+| SciBERT       | 0.524        | 0.514         | 0.510         | 0.509         | 0.509         | 0.516         |
+
+
+**RELISH:** The table below shows the results of the nDCG@N evaluation for the RELISH dataset.
+
+| Model         | nDCG@5 (AVG) | nDCG@10 (AVG) | nDCG@15 (AVG) | nDCG@20 (AVG) | nDCG@25 (AVG) | nDCG@50 (AVG) |
+|:-------------:|:------------:|:-------------:|:-------------:|:-------------:|:-------------:|:-------------:|
+| BioBERT-base  | 0.647        | 0.629         | 0.629         | 0.638         | 0.653         | 0.770         |
+| BioBERT-large | 0.634        | 0.619         | 0.622         | 0.632         | 0.648         | 0.765         |
+| SciBERT       | 0.646        | 0.629         | 0.632         | 0.640         | 0.655         | 0.771         |
 
 
 
