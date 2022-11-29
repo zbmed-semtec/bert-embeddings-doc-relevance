@@ -13,7 +13,7 @@ This project uses [Sentence Transformers pkg](https://www.sbert.net/) for runnin
     - [Generate Cosine Similarity Matrix](https://github.com/zbmed-semtec/bert-embeddings-doc-relevance/tree/main/code/cosine_similarity#cosine-similarity-matrix)
     - [Four column relevance matrix](https://github.com/zbmed-semtec/bert-embeddings-doc-relevance/tree/main/code/cosine_similarity#four-column-relevance-matrix)
 3. [Generate Embeddings](https://github.com/zbmed-semtec/bert-embeddings-doc-relevance/tree/main/code/generate_embeds#generate-bert-embeddings)
-4. [Fine-tune BERT]()
+4. [Fine-tune BERT](https://github.com/zbmed-semtec/bert-embeddings-doc-relevance/tree/main/code/tune#finetuning-bert-model-for-document-relevance)
 5. [Evaluation](https://github.com/zbmed-semtec/bert-embeddings-doc-relevance/tree/main/code/evaluation#evaluation-of-the-doc-to-doc-relevance-task-with-bert-embeddings)
 
 

@@ -120,7 +120,7 @@ Here,
 
     pip install -r requirements.txt
 
-### Run the code from termina
+### Run the code from terminal
 
 ```
 python3 finetune.py --dataset_path <path to the dataset(tsv/xml-files)>
