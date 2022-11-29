@@ -162,8 +162,8 @@ def create_precision_matrix(
 
     # load embeddings data frame
     data = pd.read_pickle(embed_path)# compression='gzip')
-    pmids  = np.array(data['PMID'].tolist(), dtype=np.int64)
-    embeds = np.array(data['embedding'].tolist(), dtype=np.float32)
+    pmids  = np.array(data['pmids'].tolist(), dtype=np.int64)
+    embeds = np.array(data['embeddings'].tolist(), dtype=np.float32)
 
     # load relevance data frame
     if dataset == 'RELISH':
