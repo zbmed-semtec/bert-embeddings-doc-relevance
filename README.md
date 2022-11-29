@@ -25,19 +25,6 @@ The datasets used for experiments are:
 
 To know more about the datasets used in this project and to get these datasets, please refer to the [medline-preprocessing](https://github.com/zbmed-semtec/medline-preprocessing) repository.
 
-### Models
-
-Two state-of-the-art BERT models relevant to the biomedical domain are used to run the experiments in this project. The models used for experiments are:
-1. [**BioBERT**](https://doi.org/10.1093/bioinformatics/btz682)
-    BioBERT is a pre-trained language representation model for the biomedical domain. It is based on the BERT model, but trained on a large corpus of biomedical text. BioBERT model is pretrained on PubMed corpus or PMC corpus or both. In this project, we use the BioBERT model pretrained on PubMed corpus by [DMIS-Lab](https://dmis.korea.ac.kr/).
-    - [dmis-lab/biobert-base-cased-v1.1](https://huggingface.co/dmis-lab/biobert-base-cased-v1.1)
-
-    - [dmis-lab/biobert-large-cased-v1.1](https://huggingface.co/dmis-lab/biobert-large-cased-v1.1)
-
-2. [**SciBERT**](https://doi.org/10.48550/arXiv.1903.10676)
-    SciBERT is a pretrained language model based on BERT but trained on a large corpus of scientific text. Model trained on 1.14M papers from semantic scholar (18% - Computer science, 82% - Biomedical domain). corpus size - 3.17B Tokens.
-    - [allenai/scibert_scivocab_cased](https://huggingface.co/allenai/scibert_scivocab_cased)
-
 ### Data Preprocessing
 
 TREC and RELISH corpora contain pubmed-IDs (PMIDS) of the scientific articles and their corresponding titles and abstracts. To get the full text of the articles, use the [medline-preprocessing](https://github.com/zbmed-semtec/medline-preprocessing) repository. The full text of the articles is stored in the `data` folder of the `medline-preprocessing` repository.
@@ -53,4 +40,19 @@ The only preprocessing steps applied to these corpora are:
 - combining the titles and abstracts of the articles as a single text
 
 - Removing unnecessary white spaces and new lines
+
+### Models
+
+Two state-of-the-art BERT models relevant to the biomedical domain are used to run the experiments in this project. The models used for experiments are:
+1. [**BioBERT**](https://doi.org/10.1093/bioinformatics/btz682)
+    BioBERT is a pre-trained language representation model for the biomedical domain. It is based on the BERT model, but trained on a large corpus of biomedical text. BioBERT model is pretrained on PubMed corpus or PMC corpus or both. In this project, we use the BioBERT model pretrained on PubMed corpus by [DMIS-Lab](https://dmis.korea.ac.kr/).
+    - [dmis-lab/biobert-base-cased-v1.1](https://huggingface.co/dmis-lab/biobert-base-cased-v1.1)
+
+    - [dmis-lab/biobert-large-cased-v1.1](https://huggingface.co/dmis-lab/biobert-large-cased-v1.1)
+
+2. [**SciBERT**](https://doi.org/10.48550/arXiv.1903.10676)
+    SciBERT is a pretrained language model based on BERT but trained on a large corpus of scientific text. Model trained on 1.14M papers from semantic scholar (18% - Computer science, 82% - Biomedical domain). corpus size - 3.17B Tokens.
+    - [allenai/scibert_scivocab_cased](https://huggingface.co/allenai/scibert_scivocab_cased)
+
+
 
