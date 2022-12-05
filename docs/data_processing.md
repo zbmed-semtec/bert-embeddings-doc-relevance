@@ -1,7 +1,0 @@
-
-## Datasets
-
-- [TREC]
-- RELISH
-
-
