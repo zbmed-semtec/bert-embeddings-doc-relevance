@@ -53,6 +53,7 @@ def generate_embeddings(data: CustomDataset, model: SentenceTransformer,
         embed = model.encode(text, batch_size = batch_size, device = get_device())
         df = pd.concat([df, pd.DataFrame({'PMID':[pmid], 'embedding':[embed]})])
         df.sort_values(by='PMID', inplace=True, ascending=True)
+
     df.to_pickle(save_path)
     if return_df:
         return df

@@ -1,13 +1,10 @@
-xmltodict==0.12.0
-transformers==4.18.0
-sentence-transformers==2.2.0
-#torch==1.10.0
-pandas==1.3.4
-nltk==3.7
-tqdm==4.62.3
-sklearn
-numba
-
-# sudo apt-get remove nvidia*
-# sudo apt install nvidia-driver-510 nvidia-dkms-510
-# sudo reboot
+matplotlib==3.8.2
+nltk==3.8.1
+numba==0.58.1
+numba_progress==1.1.0
+numpy==1.26.3
+pandas==2.1.4
+sentence_transformers==2.2.2
+torch==2.1.2
+tqdm==4.66.1
+xmltodict==0.13.0

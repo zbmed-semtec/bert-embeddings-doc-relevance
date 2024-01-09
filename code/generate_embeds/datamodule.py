@@ -147,7 +147,7 @@ class DataPreprocess:
         data = self.read_data()
         data = self.remove_stopwords(data)
         data = self.remove_white_space(data)
-        #data = self.remove_punctuation(data)
+        data = self.remove_punctuation(data)
         #data = self.stemming(data)
         return data
 
