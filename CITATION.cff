@@ -3,6 +3,9 @@ message: If you use this software, please cite it using these metadata.
 title: BERT-Embeddings-Doc-Relevance
 abstract: An approach exploring and assessing literature-based doc-2-doc recommendations using BERT embeddings, and applying it to TREC and RELISH datasets.
 authors:
+  - family-names: Ravinder
+    given-names: Rohitha
+    orcid: " https://orcid.org/0009-0004-4484-6283 "
   - family-names: Dadi
     given-names: Vishnu Vardhan
     orcid: " https://orcid.org/0000-0002-3082-7522 "
