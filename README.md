@@ -14,9 +14,8 @@ An approach exploring and assessing literature-based doc-2-doc recommendations u
     6. [Evaluation](#evaluation)
         - [Precision@N](#precisionn)
         - [nDCG@N](#ndcgn)
-4. [Getting Started](#getting-started)
-
-5. [Fine-tune BERT](https://github.com/zbmed-semtec/bert-embeddings-doc-relevance/tree/main/code/tune#finetuning-bert-model-for-document-relevance) [**Optional**]
+5. [Getting Started](#getting-started)
+6. [Fine-tune BERT](https://github.com/zbmed-semtec/bert-embeddings-doc-relevance/tree/main/code/tune#finetuning-bert-model-for-document-relevance) [**Optional**]
 
 
 
@@ -91,8 +90,31 @@ Another metric used is the nDCG@N (normalized Discounted Cumulative Gain). This 
 
 To get started with this project, follow these steps:
 
-### Step 1: Clone the Repository
-First, clone the repository to your local machine using the following command:
+### Step 1: GPU Verification & NVIDIA Driver Setup for Virtual Machine
+
+In case you are using a virtual machine, run the following set of commands to check if the virtual machine has a GPU, and if it is present, install the NVIDIA driver along with the necessary commands to verify GPU information.
+
+```
+# Update package information
+sudo apt-get update
+
+# Check for GPU presence
+lspci | grep -i nvidia
+
+# Install NVIDIA driver (if GPU is present)
+sudo ubuntu-drivers autoinstall
+
+# Verify GPU information using nvidia-smi
+nvidia-smi
+
+# Reboot the system to apply changes
+sudo reboot
+```
+
+**NOTE:** A GPU is not mandatory; its presence is optional and primarily serves to speed up the execution during the generation of embeddings.
+
+### Step 2: Clone the Repository
+Clone the repository to your machine using the following command:
 
 ###### Using HTTP:
 
@@ -104,7 +126,7 @@ Ensure you have set up SSH keys in your GitHub account.
 `git clone git@github.com:zbmed-semtec/bert-embeddings-doc-relevance.git`
 
 
-### Step 2: Create a virtual environment and install dependencies
+### Step 3: Create a virtual environment and install dependencies
 
 To create a virtual environment within your repository, run the following command:
 
@@ -131,7 +153,7 @@ To deactivate the virtual environment after running the project, run the followi
 deactivate
 ```
 
-### Step 3: Generate Embeddings
+### Step 4: Generate Embeddings
 
 To generate the embeddings, run the following command:
 
@@ -156,12 +178,12 @@ The `model_name` parameter can be assigned to any Sentence Transformer-based BER
 
 
 
-### Step 4: Calculate Cosine Similarity
+### Step 5: Calculate Cosine Similarity
 
 To generate the cosine similarity matrix and execute this [script](/code/cosine_similarity/existing_pairs.py), run the following command:
 
 ```bash
-python3 /code/cosine_similariity/existing_pairs.py -e <path to embeddings> -r <path to relevance scores>  -s <path to save the matrix>  -d <dataset name TREC/RELISH>
+python3 /code/cosine_similarity/existing_pairs.py -e <path to embeddings> -r <path to relevance scores>  -s <path to save the matrix>  -d <dataset name TREC/RELISH>
 ```
 
 The above command will generate a pickle file with the four column relevance matrix. The output file saved can be a
@@ -172,11 +194,11 @@ the output file will be saved as a pickle file. If the save path has a `.tsv` ex
 
 
 
-### Step 5: Hyperparameter Optimization
+### Step 6: Hyperparameter Optimization
 
 **_To be written_**
 
-### Step 6: Precision@N
+### Step 7: Precision@N
 In order to calculate the Precision@N scores and execute this [script](/code/evaluation/precision@N/precision.py), run the follwing command:
 
 ```
@@ -195,7 +217,7 @@ python3 code/evaluation/precision@N/precision.py -c data/cosine_similarity_0.tsv
 ```
 
 
-### Step 7: nDCG@N
+### Step 8: nDCG@N
 In order to calculate nDCG scores and execute this [script](/code/evaluation/calculate_gain.py), run the following command:
 
 ```
@@ -214,7 +236,7 @@ python3 code/evaluation/calculate_gain.py -i data/cosine_similarity_0.tsv -o dat
 ```
 
 
-### Step 8: Compile Results
+### Step 9: Compile Results
 
 In order to compile the average result values for Precison@ and nDCG@N and generate a single TSV file each, please use this [script](code/evaluation/show_avg.py).
 
