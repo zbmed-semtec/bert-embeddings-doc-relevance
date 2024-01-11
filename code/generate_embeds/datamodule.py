@@ -9,7 +9,7 @@ maintainer: Vishnu Vardhan Dadi, Lukas Geist
 """
 import os
 import re
-
+import numpy as np
 import pandas as pd
 import nltk
 from torch.utils.data.dataset import Dataset
@@ -42,6 +42,19 @@ class DataPreprocess:
             # combine the title and abstract
             data['text'] = data['title'] + ' ' + data['abstract']
             data = data.drop(['title','abstract'],axis=1)
+            return data
+        elif self.path.endswith('.npy'):
+            data = np.load(self.path, allow_pickle=True)
+            pmids = []
+            docs = []
+            for line in data:
+                pmids.append(int(line[0]))
+                if isinstance(line[1], (np.ndarray, np.generic)):
+                    docs.append(np.ndarray.tolist(
+                        line[1]) + np.ndarray.tolist(line[2]))
+                else:
+                    docs.append(line[1] + line[2])
+            data = pd.DataFrame({'PMID': pmids, 'text': docs})
             return data
         # if path is a directory
         elif os.path.isdir(self.path):
@@ -147,7 +160,7 @@ class DataPreprocess:
         data = self.read_data()
         data = self.remove_stopwords(data)
         data = self.remove_white_space(data)
-        data = self.remove_punctuation(data)
+        # data = self.remove_punctuation(data)
         #data = self.stemming(data)
         return data
 
