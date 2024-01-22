@@ -104,11 +104,11 @@ lspci | grep -i nvidia
 # Install NVIDIA driver (if GPU is present)
 sudo ubuntu-drivers autoinstall
 
-# Verify GPU information using nvidia-smi
-nvidia-smi
-
 # Reboot the system to apply changes
 sudo reboot
+
+# Verify GPU information using nvidia-smi
+nvidia-smi
 ```
 
 **NOTE:** A GPU is not mandatory; its presence is optional and primarily serves to speed up the execution during the generation of embeddings.
