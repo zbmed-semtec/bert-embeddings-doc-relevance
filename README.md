@@ -213,7 +213,7 @@ You must pass the following two arguments:
 For example, if you are running the code from the code folder and have the cosine similarity TSV file in the data folder, run the precision matrix creation for the first hyperparameter as:
 
 ```
-python3 code/evaluation/precision@N/precision.py -c data/cosine_similarity_0.tsv -o data/precision_fasttext_0.tsv
+python3 code/evaluation/precision@N/precision.py -c data/cosine_similarity_bert.tsv -o data/precision_bert.tsv
 ```
 
 
@@ -232,7 +232,7 @@ You must pass the following two arguments:
 For example, if you are running the code from the code folder and have the 4 column RELISH TSV file in the data folder, run the matrix creation for the first hyperparameter as:
 
 ```
-python3 code/evaluation/gain/calculate_gain.py -i data/cosine_similarity_0.tsv -o data/ndcg_fasttext_0.tsv
+python3 code/evaluation/gain/calculate_gain.py -i data/cosine_similarity_bert.tsv -o data/ndcg_bert.tsv
 ```
 
 
