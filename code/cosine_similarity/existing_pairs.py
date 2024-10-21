@@ -49,8 +49,7 @@ class CosineSimilarity:
     Creates a 4 column matrix by appending cosine similarity scores for all existing pairs
     of PMIDs to the Relevance matrix.
     """
-    def __init__(self, embeddings_path: str, rel_matrix_path: str,
-                dataset: str = 'TREC'):
+    def __init__(self, embeddings_path: str, rel_matrix_path: str):
         """ Reads the embeddings and relevance matrix from the given paths and
             loads them as a pandas dataframes. Initializes the 4 column matrix
             dataframe.
@@ -62,7 +61,6 @@ class CosineSimilarity:
             rel_matrix_path (str): Path to the relevance matrix file with three
                                     columns 'PMID1', 'PMID2' and 'Relevance'.
 
-            dataset (str, optional): Name of the dataset. Defaults to 'TREC'.
         """
 
         if '.pkl' in embeddings_path:
@@ -74,8 +72,6 @@ class CosineSimilarity:
             self.relavance_matrix = pd.read_pickle(rel_matrix_path)
         elif '.tsv' in rel_matrix_path:
             self.relavance_matrix = pd.read_csv(rel_matrix_path, sep='\t')
-
-        self.dataset = dataset
 
         self.four_column_matrix = pd.DataFrame()
 
@@ -108,11 +104,7 @@ class CosineSimilarity:
 
         self.four_column_matrix['PMID2'] =  pmid2_list
 
-        if self.dataset == 'TREC':
-            self.four_column_matrix['Rel-d2d'] =  rel_list
-
-        elif self.dataset == 'RELISH':
-            self.four_column_matrix['Relevance'] =  rel_list
+        self.four_column_matrix['Value'] =  rel_list
 
         self.four_column_matrix['Cosine Similarity'] = cs_list
 
@@ -120,27 +112,3 @@ class CosineSimilarity:
             self.four_column_matrix.to_pickle(save_dir, compression='infer')
         elif '.tsv' in save_dir:
             self.four_column_matrix.to_csv(save_dir, sep='\t', index=False)
-
-if __name__ == '__main__':
-
-    parser = ap.ArgumentParser()
-    parser.add_argument('-e', '--embeddings_path', type=str,
-                        help='Path to the embeddings file with two columns \
-                                "PMID" and "embedding".')
-    parser.add_argument('-r', '--rel_matrix_path', type=str,
-                        help='Path to the relevance matrix file with three \
-                                columns "PMID1", "PMID2" and "Relevance".')
-    parser.add_argument('-s', '--save_dir', type=str,
-                        help='Path to the directory to save the 4 column matrix.')
-
-    parser.add_argument('-d', '--dataset', type=str, default='TREC',
-                        help='Name of the dataset. Defaults to "TREC".')
-
-    args = parser.parse_args()
-
-    mat = CosineSimilarity(embeddings_path=args.embeddings_path,
-                            rel_matrix_path=args.rel_matrix_path,
-                            dataset=args.dataset)
-
-    mat.create_relavance_matrix(save_dir=args.save_dir)
-

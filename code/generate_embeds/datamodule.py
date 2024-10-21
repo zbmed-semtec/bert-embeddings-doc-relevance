@@ -12,6 +12,7 @@ import re
 import numpy as np
 import pandas as pd
 import nltk
+import logging
 from torch.utils.data.dataset import Dataset
 import xmltodict
 
@@ -21,14 +22,16 @@ class DataPreprocess:
     """
         Class to preprocess the documents in the corpus
     """
-    def __init__(self, file_path: str):
+    def __init__(self, file_path: str, preprocess: str):
         """ Initializes the class
 
         Args:
             file_path (str): File path if tsv or, directory path if dir of xml
             files
+            preprocess (str): Preprocessing steps to be done on the dataset.
         """
         self.path = file_path
+        self.preprocess = preprocess
 
     def read_data(self)->pd.DataFrame:
         """ Reads the data from the file path
@@ -40,7 +43,7 @@ class DataPreprocess:
             data = pd.read_csv(self.path, sep='\t')
             data = data.dropna()
             # combine the title and abstract
-            data['text'] = data['title'] + ' ' + data['abstract']
+            data['text'] = data['title'] + '[SEP]' + data['abstract']
             data = data.drop(['title','abstract'],axis=1)
             return data
         elif self.path.endswith('.npy'):
@@ -158,16 +161,25 @@ class DataPreprocess:
         """
 
         data = self.read_data()
-        data = self.remove_stopwords(data)
-        data = self.remove_white_space(data)
-        # data = self.remove_punctuation(data)
-        #data = self.stemming(data)
-        return data
+        if self.preprocess == "none":
+            logging.info("No Preprocessing on Dataset")
+            return data
+        elif self.preprocess == "wspn":
+            logging.info("Removing white spaces and punctuations from Dataset")
+            data = self.remove_white_space(data)
+            data = self.remove_punctuation(data)
+            return data
+        elif self.preprocess == "wspnss":
+            logging.info("Removing white spaces, punctuations and stop words from Dataset")
+            data = self.remove_stopwords(data)
+            data = self.remove_white_space(data)
+            data = self.remove_punctuation(data)
+            return data
 
 class CustomDataset(Dataset):
-    def __init__(self, data_file_path:str):
+    def __init__(self, data_file_path:str, preprocess: str):
         super().__init__()
-        self.df = DataPreprocess(data_file_path).text_normalize()
+        self.df = DataPreprocess(data_file_path, preprocess).text_normalize()
 
     def __len__(self)->int:
         """ Returns number of rows in the dataset
