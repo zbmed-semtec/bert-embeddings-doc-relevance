@@ -1,7 +1,6 @@
 import argparse
 import os
 import sys
-# sys.path.insert(0, '../')
 import logging
 import numpy as np
 import pandas as pd
@@ -14,16 +13,14 @@ from datasets import load_dataset
 from dataset import CreateFineTuneDataset
 
 
-logging.basicConfig(filename='training.log',  # Specify the log file name
-                    level=logging.INFO,       # Set the logging level
+logging.basicConfig(filename='training.log',
+                    level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s') 
-
-# from generate_embeds.datamodule import DataPreprocess
 
 class TuneBert:
     """
-        class to finetune the bert model for a given dataset when relavance
-        scores are available.
+    Class to finetune the bert model for a given dataset when relavance
+    scores are available.
     """
     def __init__(self, train_dataset_path: str,
                 valid_dataset_path, model_name: str, loss_func: str
@@ -45,61 +42,19 @@ class TuneBert:
                                         Defaults to MNRLoss.
         """
         self.train_data = load_dataset("csv", data_files=train_dataset_path)['train']
-        print(self.train_data)
-        # self.valid_data = load_dataset("csv", data_files=valid_dataset_path)['train']
-        # print(self.valid_data)
+        self.valid_data = load_dataset("csv", data_files=valid_dataset_path)['train']
 
         self.model = SentenceTransformer(model_name)
 
         self.loss_func = loss_func
         
-        if loss_func == 'CosineSimilarityLoss':
-            self.train_loss = losses.CosineSimilarityLoss(self.model)
-        if loss_func == 'MNR':
+        if loss_func == 'contrastive':
+            self.train_loss = losses.ContrastiveLoss(self.model)
+        if loss_func == 'mnr':
             self.train_loss = losses.MultipleNegativesRankingLoss(self.model)
-        if loss_func == 'Softmax':
+        if loss_func == 'softmax':
             self.train_loss = losses.SoftmaxLoss(self.model, self.model.get_sentence_embedding_dimension(), num_labels=3)
 
-
-    def prepare_data(self):
-        data = []
-        abstracts = self.text_data['text'].to_numpy()
-        pmid_column = self.text_data['PMID'].to_numpy()
-        for pmid1,pmid2,relv in tqdm(self.rel_data.to_numpy(),
-                                        desc='Preparing train-data'):
-            text1 = abstracts[np.where(pmid_column == pmid1)[0]]
-            text2 = abstracts[np.where(pmid_column == pmid2)[0]]
-            if self.loss_func == 'CosineSimilarityLoss':
-                if relv == 0: label = 0.3
-                if relv == 1: label = 0.6
-                if relv == 2: label  = 0.9
-                if len(text1)>0 and len(text2)>0:
-                    text1 = text1.tolist()[0]
-                    text2 = text2.tolist()[0]
-                    data.append(InputExample(texts=[text1, text2],
-                                                label=label))
-                else:
-                    continue
-        
-    def prepare_data(self):
-        data = []
-        abstracts = self.text_data['text'].to_numpy()
-        pmid_column = self.text_data['PMID'].to_numpy()
-        for pmid1,pmid2,relv in tqdm(self.rel_data.to_numpy(),
-                                        desc='Preparing train-data'):
-            text1 = abstracts[np.where(pmid_column == pmid1)[0]]
-            text2 = abstracts[np.where(pmid_column == pmid2)[0]]
-            if self.loss_func == 'CosineSimilarityLoss':
-                if relv == 0: label = 0.3
-                if relv == 1: label = 0.6
-                if relv == 2: label  = 0.9
-                if len(text1)>0 and len(text2)>0:
-                    text1 = text1.tolist()[0]
-                    text2 = text2.tolist()[0]
-                    data.append(InputExample(texts=[text1, text2],
-                                                label=label))
-                else:
-                    continue
 
     def train(self, save_dir, batch_size, epochs):
         batch_size = batch_size
@@ -107,20 +62,20 @@ class TuneBert:
         args = SentenceTransformerTrainingArguments(
                 output_dir = save_dir,
                 per_device_train_batch_size=batch_size,
-                # per_device_eval_batch_size=batch_size,
+                per_device_eval_batch_size=batch_size,
                 num_train_epochs = epochs,
-                # eval_strategy = 'epoch',
+                eval_strategy = 'epoch',
                 learning_rate = 2e-5,
                 warmup_ratio = 0.1,
-                # do_train=True,
-                # do_eval=True
+                do_train=True,
+                do_eval=True
             	)
 
         trainer = SentenceTransformerTrainer(
             model = self.model,
             args = args,
             train_dataset = self.train_data,
-            # eval_dataset = self.valid_data,
+            eval_dataset = self.valid_data,
             loss = self.train_loss
         )        
 
@@ -129,11 +84,7 @@ class TuneBert:
     
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description='Finetune BioBERT')
-    parser.add_argument('-i', '--input_train_dataset_path', type=str, required=True,
-                        help='path to the dataset')
-    parser.add_argument('-v', '--input_valid_dataset_path', type=str, required=True,
-                        help='path to the dataset')
+    parser = argparse.ArgumentParser(description='Finetune BioBpipERT')
     parser.add_argument('-m', '--model_name', type=str, required=True,
                         help='model')                  
     parser.add_argument('-o', '--save_train', type=str, required=True,
@@ -148,14 +99,14 @@ if __name__ == '__main__':
                         help='class distribution to be used (either 2 or 3)')
     args = parser.parse_args()
 
-    # data = CreateFineTuneDataset(loss_func=args.loss_func, classes=args.classes)
+    data = CreateFineTuneDataset(loss_func=args.loss_func, classes=args.classes)
 
-    input_train_dataset_path = f'input_{args.loss_func.lower()}_text_train.csv'
-    input_test_dataset_path =  f'input_{args.loss_func.lower()}_text_train.csv'
-    input_valid_dataset_path =  f'input_{args.loss_func.lower()}_text_train.csv'
+    input_train_dataset_path = f'data/Split_Dataset/Data/input_{args.loss_func.lower()}_text_train.csv'
+    input_test_dataset_path =  f'data/Split_Dataset/Data/input_{args.loss_func.lower()}_text_test.csv'
+    input_valid_dataset_path =  f'data/Split_Dataset/Data/input_{args.loss_func.lower()}_text_valid.csv'
 
-    tune = TuneBert(train_dataset_path= args.input_train_dataset_path,
-                    valid_dataset_path = args.input_valid_dataset_path,
+    tune = TuneBert(train_dataset_path= input_train_dataset_path,
+                    valid_dataset_path = input_valid_dataset_path,
                     model_name=args.model_name,
                     loss_func=args.loss_func)
     tune.train(args.save_train, args.batch_size, args.epochs)
