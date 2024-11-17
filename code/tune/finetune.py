@@ -18,10 +18,6 @@ from transformers import TrainerCallback, TrainingArguments, TrainerState, Train
 from sentence_transformers import SentenceTransformer, InputExample, SentenceTransformerTrainer, SentenceTransformerTrainingArguments
 
 
-logging.basicConfig(filename='training_biobert_base_mnr_cl_2.log',
-                    level=logging.INFO,
-                    format='%(asctime)s - %(levelname)s - %(message)s') 
-
 class EarlyStoppingCallback(TrainerCallback):
     """
     Early stopping callback for training to monitor the evaluation metric (`eval_loss`) and
@@ -82,7 +78,7 @@ class TuneBert:
         Dropout value for regularization.
     """
     def __init__(self, train_dataset_path: str, valid_dataset_path: str, 
-                save_dir: str, model_name: str, loss_func: str, droput: float):
+                save_dir: str, model_name: str, loss_func: str, dropout: float):
 
         self.train_data = load_dataset("csv", data_files=train_dataset_path)['train']
         self.valid_data = load_dataset("csv", data_files=valid_dataset_path)['train']
@@ -146,7 +142,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Finetune BioBpipERT')
     parser.add_argument('-m', '--model_name', type=str, required=True,
                         help='model')                  
-    parser.add_argument('-o', '--save_train', type=str, required=True,
+    parser.add_argument('-o', '--save_model', type=str, required=True,
                         help='path to save the model')
     parser.add_argument('-e', '--epochs', type=int, default=2,
                         help='number of epochs to train')
@@ -160,15 +156,19 @@ if __name__ == '__main__':
                         help='dropout value')                 
     args = parser.parse_args()
 
+    safe_model_name = args.model_name.replace('/', '_')
+    
+    logging.basicConfig(filename=f'{safe_model_name}_{args.loss_func}_{args.classes}.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s') 
+
     data = CreateFineTuneDataset(loss_func=args.loss_func, classes=args.classes)
 
-    input_train_dataset_path = f'data/Split_Dataset/Data/input_{args.loss_func.lower()}_text_train.csv'
-    input_test_dataset_path =  f'data/Split_Dataset/Data/input_{args.loss_func.lower()}_text_test.csv'
+    input_train_dataset_path = f'data/Split_Dataset/Data/input_{args.loss_func.lower()}_text_valid.csv'
+    input_test_dataset_path =  f'data/Split_Dataset/Data/input_{args.loss_func.lower()}_text_valid.csv'
     input_valid_dataset_path =  f'data/Split_Dataset/Data/input_{args.loss_func.lower()}_text_valid.csv'
 
     tune = TuneBert(train_dataset_path= input_train_dataset_path,
                     valid_dataset_path = input_valid_dataset_path,
-                    save_dir = args.save_train,
+                    save_dir = args.save_model,
                     model_name=args.model_name,
                     loss_func=args.loss_func,
                     dropout=args.dropout)
