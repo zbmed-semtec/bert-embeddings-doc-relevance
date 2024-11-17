@@ -23,7 +23,7 @@ if __name__ == '__main__':
     parser.add_argument('-g', '--ground_truth_data', type=str, help='path to the ground truth test TSV file')
     parser.add_argument('-p', '--preprocess', type=str, help='preprocessing steps: 0 no preprocessing, 1 for removing white space and punctuations and 2 for removing white space and punctuations and stop words')
     parser.add_argument('-m', '--model_name', type=str, help='name of the model to be used')
-    parser.add_argument('-b', '--batch_size', type=int, default=64, help='batch size to be used')
+    parser.add_argument('-b', '--batch_size', type=int, default=16, help='batch size to be used')
     parser.add_argument('-c', '--classes', type=int, help='class distribution to be used')
 
     args = parser.parse_args()
