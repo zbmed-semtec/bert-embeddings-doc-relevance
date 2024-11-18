@@ -137,7 +137,23 @@ class TuneBert:
                 logging.info(f"Epoch {log['epoch']}: eval_loss = {log['eval_loss']}")
             logging.info(log)
 
-    
+        file_path = os.path.join(save_dir, "modules.json")
+        try:
+            with open(file_path, "r") as file:
+                data = json.load(file) 
+            
+            for module in data:
+                if module.get("idx") == 1 and module.get("name") == "1" and module.get("path") == "1_PoolingWithDropout":
+                    module["type"] = "tune.pooling.PoolingWithDropout"
+        
+            with open(file_path, "w") as file:
+                json.dump(data, file, indent=2)
+
+            print("File updated successfully.")
+
+        except FileNotFoundError:
+            print(f"The file '{file_path}' was not found.")
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Finetune BioBpipERT')
     parser.add_argument('-m', '--model_name', type=str, required=True,
@@ -162,8 +178,8 @@ if __name__ == '__main__':
 
     data = CreateFineTuneDataset(loss_func=args.loss_func, classes=args.classes)
 
-    input_train_dataset_path = f'data/Split_Dataset/Data/input_{args.loss_func.lower()}_text_valid.csv'
-    input_test_dataset_path =  f'data/Split_Dataset/Data/input_{args.loss_func.lower()}_text_valid.csv'
+    input_train_dataset_path = f'data/Split_Dataset/Data/input_{args.loss_func.lower()}_text_train.csv'
+    input_test_dataset_path =  f'data/Split_Dataset/Data/input_{args.loss_func.lower()}_text_test.csv'
     input_valid_dataset_path =  f'data/Split_Dataset/Data/input_{args.loss_func.lower()}_text_valid.csv'
 
     tune = TuneBert(train_dataset_path= input_train_dataset_path,
@@ -172,4 +188,4 @@ if __name__ == '__main__':
                     model_name=args.model_name,
                     loss_func=args.loss_func,
                     dropout=args.dropout)
-    tune.train(args.save_train, args.batch_size, args.epochs)
+    tune.train(args.save_model, args.batch_size, args.epochs)
