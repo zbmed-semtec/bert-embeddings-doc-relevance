@@ -1,6 +1,11 @@
 # BERT-embeddings-doc-relevance
+
+
+[![DOI](https://img.shields.io/badge/DOI-10.5281/zenodo.18969186-blue)](https://doi.org/10.5281/zenodo.18969186) 
+![Status](https://img.shields.io/badge/Status-inactive-orange)
+
 An approach exploring and assessing literature-based doc-2-doc recommendations using BERT models with its application to the RELISH dataset. The dataset used is the RELISH Corpus, an expert-curated collection of biomedical literature consisting of pairwise document assessments. 
-The workflow involves two main steps: First, BERT models are used without any fine-tuning, generating document embeddings to assess document recommendations. Second, the BERT models are fine-tuned on a specific training set derived from the RELISH dataset, and the resulting model is used to generate document recommendations on a separate test set. The performance of both the pretrained and fine-tuned models is then compared to assess the impact of fine-tuning on the quality of document recommendations.
+The workflow involves two main steps: First, BERT models are used without any fine-tuning, generating document embeddings to assess document recommendations. Second, the BERT models are fine-tuned on a specific training set derived from the RELISH dataset, and the resulting model is used to generate document recommendations on a separate test set. The performance of both the pretrained and fine-tuned models is then compared to assess the impact of fine-tuning on the quality of document recommendations. 
 
 ## Table of Contents
 
